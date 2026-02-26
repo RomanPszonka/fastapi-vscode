@@ -29,3 +29,4 @@ coverage
 CLAUDE.local.md
 
 .env
+package-lock.json

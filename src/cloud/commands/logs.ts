@@ -5,7 +5,7 @@ import { type ApiService, type AppLogEntry, StreamLogError } from "../api"
 import type { ConfigService } from "../config"
 
 const DEFAULT_TAIL = 100
-export const LOGS_VIEW_ID = "fastapi-cloud-logs"
+export const LOGS_VIEW_ID = "django-cloud-logs"
 
 // --- Log formatting ---
 

@@ -1,9 +1,9 @@
 /**
- * VSCode extension entry point for FastAPI path operation discovery.
+ * VSCode extension entry point for Django URL pattern discovery.
  */
 
 import * as vscode from "vscode"
-import { discoverFastAPIApps } from "./appDiscovery"
+import { discoverDjangoApps } from "./appDiscovery"
 import { ApiService } from "./cloud/api"
 import { AUTH_PROVIDER_ID, CloudAuthenticationProvider } from "./cloud/auth"
 import { LOGS_VIEW_ID, LogsViewProvider } from "./cloud/commands/logs"
@@ -38,7 +38,7 @@ import {
 } from "./vscode/pathOperationTreeProvider"
 import { TestCodeLensProvider } from "./vscode/testCodeLensProvider"
 
-export const EXTENSION_ID = "FastAPILabs.fastapi-vscode"
+export const EXTENSION_ID = "DjangoLabs.django-vscode"
 
 export function getExtensionVersion(): string {
   return (
@@ -61,13 +61,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const elapsed = createTimer()
   const extensionVersion = getExtensionVersion()
   log(
-    `FastAPI extension ${extensionVersion} activated (VS Code ${vscode.version})`,
+    `Django extension ${extensionVersion} activated (VS Code ${vscode.version})`,
   )
 
   // Initialize telemetry
   await initVSCodeTelemetry(context)
 
-  let apps: Awaited<ReturnType<typeof discoverFastAPIApps>> = []
+  let apps: Awaited<ReturnType<typeof discoverDjangoApps>> = []
   let success = true
 
   try {
@@ -105,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   try {
     // Discover apps and create providers
-    apps = await discoverFastAPIApps(parserService)
+    apps = await discoverDjangoApps(parserService)
   } catch (error) {
     success = false
     trackActivationFailed(error, "discovery")
@@ -163,7 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (refreshTimeout) clearTimeout(refreshTimeout)
     refreshTimeout = setTimeout(async () => {
       if (!parserService) return
-      const newApps = await discoverFastAPIApps(parserService)
+      const newApps = await discoverDjangoApps(parserService)
       pathOperationProvider.setApps(newApps, groupApps(newApps))
       codeLensProvider.setApps(newApps)
     }, 300)
@@ -191,7 +191,7 @@ export async function activate(context: vscode.ExtensionContext) {
   })
 
   // CodeLens provider (optional)
-  const config = vscode.workspace.getConfiguration("fastapi")
+  const config = vscode.workspace.getConfiguration("django")
   if (config.get<boolean>("codeLens.enabled", true)) {
     context.subscriptions.push(
       vscode.languages.registerCodeLensProvider(
@@ -202,7 +202,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const cloudEnabled = vscode.workspace
-    .getConfiguration("fastapi")
+    .getConfiguration("django")
     .get<boolean>("cloud.enabled", true)
 
   if (cloudEnabled) {
@@ -213,7 +213,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
       { dispose: () => authProvider.dispose() },
-      vscode.commands.registerCommand("fastapi-vscode.signIn", async () => {
+      vscode.commands.registerCommand("django-vscode.signIn", async () => {
         await vscode.authentication.getSession(AUTH_PROVIDER_ID, [], {
           createIfNone: true,
         })
@@ -238,7 +238,7 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.StatusBarAlignment.Left,
       100,
     )
-    statusBarItem.command = "fastapi-vscode.cloudMenu"
+    statusBarItem.command = "django-vscode.cloudMenu"
 
     const cloudController = new CloudController(
       authProvider,
@@ -279,14 +279,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (e) => {
       const requiresReload =
-        e.affectsConfiguration("fastapi.cloud.enabled") ||
-        e.affectsConfiguration("fastapi.codeLens.enabled") ||
-        e.affectsConfiguration("fastapi.entryPoint") ||
-        e.affectsConfiguration("fastapi.telemetry.enabled")
+        e.affectsConfiguration("django.cloud.enabled") ||
+        e.affectsConfiguration("django.codeLens.enabled") ||
+        e.affectsConfiguration("django.entryPoint") ||
+        e.affectsConfiguration("django.telemetry.enabled")
 
       if (requiresReload) {
         const action = await vscode.window.showWarningMessage(
-          "FastAPI setting changed. Reload the window to apply changes.",
+          "Django setting changed. Reload the window to apply changes.",
           "Reload Window",
         )
         if (action === "Reload Window") {
@@ -317,7 +317,7 @@ function registerCloudCommands(
   cloudController: CloudController,
 ): vscode.Disposable {
   return vscode.Disposable.from(
-    vscode.commands.registerCommand("fastapi-vscode.cloudMenu", async () => {
+    vscode.commands.registerCommand("django-vscode.cloudMenu", async () => {
       try {
         await cloudController.showMenu()
       } catch (error) {
@@ -328,7 +328,7 @@ function registerCloudCommands(
       }
     }),
 
-    vscode.commands.registerCommand("fastapi-vscode.linkApp", async () => {
+    vscode.commands.registerCommand("django-vscode.linkApp", async () => {
       try {
         await cloudController.linkProject()
       } catch (error) {
@@ -339,7 +339,7 @@ function registerCloudCommands(
       }
     }),
 
-    vscode.commands.registerCommand("fastapi-vscode.unlinkApp", async () => {
+    vscode.commands.registerCommand("django-vscode.unlinkApp", async () => {
       try {
         await cloudController.unlinkProject()
       } catch (error) {
@@ -350,7 +350,7 @@ function registerCloudCommands(
       }
     }),
 
-    vscode.commands.registerCommand("fastapi-vscode.signOut", async () => {
+    vscode.commands.registerCommand("django-vscode.signOut", async () => {
       try {
         await cloudController.signOut()
       } catch (error) {
@@ -360,7 +360,7 @@ function registerCloudCommands(
         )
       }
     }),
-    vscode.commands.registerCommand("fastapi-vscode.deploy", async () => {
+    vscode.commands.registerCommand("django-vscode.deploy", async () => {
       try {
         await cloudController.deploy()
       } catch (error) {
@@ -371,7 +371,7 @@ function registerCloudCommands(
       }
     }),
 
-    vscode.commands.registerCommand("fastapi-vscode.viewLogs", async () => {
+    vscode.commands.registerCommand("django-vscode.viewLogs", async () => {
       try {
         await cloudController.viewLogs()
       } catch (error) {
@@ -397,18 +397,18 @@ function registerCommands(
 ): vscode.Disposable {
   return vscode.Disposable.from(
     vscode.commands.registerCommand(
-      "fastapi-vscode.refreshPathOperations",
+      "django-vscode.refreshPathOperations",
       async () => {
         if (!parserService) return
         clearImportCache()
-        const newApps = await discoverFastAPIApps(parserService)
+        const newApps = await discoverDjangoApps(parserService)
         pathOperationProvider.setApps(newApps, groupApps(newApps))
         codeLensProvider.setApps(newApps)
       },
     ),
 
     vscode.commands.registerCommand(
-      "fastapi-vscode.goToPathOperation",
+      "django-vscode.goToPathOperation",
       (item: PathOperationTreeItem) => {
         if (item.type === "route") {
           incrementRouteNavigated()
@@ -418,7 +418,7 @@ function registerCommands(
     ),
 
     vscode.commands.registerCommand(
-      "fastapi-vscode.searchPathOperations",
+      "django-vscode.searchPathOperations",
       async () => {
         const workspacePrefix =
           vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? ""
@@ -441,13 +441,13 @@ function registerCommands(
         if (items.length === 0) {
           trackSearchExecuted(0, false)
           vscode.window.showInformationMessage(
-            "No FastAPI path operations found in the workspace.",
+            "No Django URL patterns found in the workspace.",
           )
           return
         }
 
         const selected = await vscode.window.showQuickPick(items, {
-          placeHolder: "Search FastAPI path operations...",
+          placeHolder: "Search Django URL patterns...",
           matchOnDescription: true,
         })
         trackSearchExecuted(items.length, selected !== undefined)
@@ -458,7 +458,7 @@ function registerCommands(
     ),
 
     vscode.commands.registerCommand(
-      "fastapi-vscode.copyPathOperationPath",
+      "django-vscode.copyPathOperationPath",
       (item: PathOperationTreeItem) => {
         if (item.type === "route") {
           incrementRouteCopied()
@@ -470,7 +470,7 @@ function registerCommands(
     ),
 
     vscode.commands.registerCommand(
-      "fastapi-vscode.goToRouter",
+      "django-vscode.goToRouter",
       (item: PathOperationTreeItem) => {
         if (item.type === "router") {
           navigateToLocation(item.router.location)
@@ -478,20 +478,20 @@ function registerCommands(
       },
     ),
 
-    vscode.commands.registerCommand("fastapi-vscode.reportIssue", () => {
+    vscode.commands.registerCommand("django-vscode.reportIssue", () => {
       vscode.env.openExternal(
         vscode.Uri.parse(
-          "https://github.com/fastapi/fastapi-vscode/issues/new?labels=bug",
+          "https://github.com/django/django-vscode/issues/new?labels=bug",
         ),
       )
     }),
 
-    vscode.commands.registerCommand("fastapi-vscode.toggleRouters", () => {
+    vscode.commands.registerCommand("django-vscode.toggleRouters", () => {
       pathOperationProvider.toggleRouters()
     }),
 
     vscode.commands.registerCommand(
-      "fastapi-vscode.goToDefinition",
+      "django-vscode.goToDefinition",
       (
         locations: vscode.Location[],
         fromUri: vscode.Uri,
