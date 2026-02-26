@@ -20,8 +20,8 @@ function findAppRouter(
     return routers.find((r) => r.variableName === targetVariable)
   }
   return (
-    routers.find((r) => r.type === "FastAPI") ??
-    routers.find((r) => r.type === "APIRouter")
+    routers.find((r) => r.type === "Django") ??
+    routers.find((r) => r.type === "URLConf")
   )
 }
 
@@ -214,7 +214,7 @@ async function resolveRouterReference(
 
   // First, check if this is a local router defined in the same file
   const localRouter = analysis.routers.find(
-    (r) => r.variableName === moduleName && r.type === "APIRouter",
+    (r) => r.variableName === moduleName && r.type === "URLConf",
   )
   if (localRouter) {
     // Filter routes that belong to this router (decorated with @router.method)

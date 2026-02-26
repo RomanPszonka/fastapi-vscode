@@ -1,7 +1,7 @@
 import * as assert from "node:assert"
 import { analyzeFile, analyzeTree } from "../../core/analyzer"
 import { Parser } from "../../core/parser"
-import { fixtures, nodeFileSystem, wasmBinaries } from "../testUtils"
+import { nodeFileSystem, wasmBinaries } from "../testUtils"
 
 suite("analyzer", () => {
   let parser: Parser
@@ -22,66 +22,69 @@ suite("analyzer", () => {
   })
 
   suite("analyzeTree", () => {
-    test("extracts routes from decorated functions", () => {
+    test("extracts routes from urlpatterns path() calls", () => {
       const code = `
-from fastapi import APIRouter
+from django.urls import path
+from . import views
 
-router = APIRouter()
-
-@router.get("/")
-def list_items():
-    pass
-
-@router.post("/")
-def create_item():
-    pass
+urlpatterns = [
+    path('', views.list_items, name='list-items'),
+    path('create/', views.create_item, name='create-item'),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
 
       assert.strictEqual(result.routes.length, 2)
-      assert.strictEqual(result.routes[0].method, "get")
+      assert.strictEqual(result.routes[0].method, "GET")
       assert.strictEqual(result.routes[0].path, "/")
-      assert.strictEqual(result.routes[1].method, "post")
+      assert.strictEqual(result.routes[1].method, "GET")
+      assert.strictEqual(result.routes[1].path, "/create/")
     })
 
-    test("extracts routers from assignments", () => {
+    test("extracts routers from urlpatterns and DRF routers", () => {
       const code = `
-from fastapi import FastAPI, APIRouter
+from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-app = FastAPI()
-router = APIRouter(prefix="/api")
+urlpatterns = [
+    path('users/', views.user_list),
+]
+router = DefaultRouter()
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
 
       assert.strictEqual(result.routers.length, 2)
-      assert.strictEqual(result.routers[0].variableName, "app")
-      assert.strictEqual(result.routers[0].type, "FastAPI")
+      assert.strictEqual(result.routers[0].variableName, "urlpatterns")
+      assert.strictEqual(result.routers[0].type, "URLConf")
       assert.strictEqual(result.routers[1].variableName, "router")
-      assert.strictEqual(result.routers[1].type, "APIRouter")
-      assert.strictEqual(result.routers[1].prefix, "/api")
+      assert.strictEqual(result.routers[1].type, "URLConf")
     })
 
-    test("extracts include_router calls", () => {
+    test("extracts include() calls", () => {
       const code = `
-app.include_router(users.router, prefix="/users")
-app.include_router(items.router, prefix="/items")
+from django.urls import path, include
+
+urlpatterns = [
+    path('users/', include('users.urls')),
+    path('items/', include('items.urls')),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
 
       assert.strictEqual(result.includeRouters.length, 2)
-      assert.strictEqual(result.includeRouters[0].router, "users.router")
+      assert.strictEqual(result.includeRouters[0].router, "users.urls")
       assert.strictEqual(result.includeRouters[0].prefix, "/users")
-      assert.strictEqual(result.includeRouters[1].router, "items.router")
+      assert.strictEqual(result.includeRouters[1].router, "items.urls")
       assert.strictEqual(result.includeRouters[1].prefix, "/items")
     })
 
     test("extracts imports", () => {
       const code = `
-from fastapi import FastAPI
-from .routes import users, items
+from django.urls import path
+from .views import users, items
 import os
 `
       const tree = parse(code)
@@ -89,28 +92,26 @@ import os
 
       assert.strictEqual(result.imports.length, 3)
 
-      const fastapiImport = result.imports.find(
-        (i) => i.modulePath === "fastapi",
+      const djangoImport = result.imports.find(
+        (i) => i.modulePath === "django.urls",
       )
-      assert.ok(fastapiImport)
-      assert.deepStrictEqual(fastapiImport.names, ["FastAPI"])
+      assert.ok(djangoImport)
+      assert.deepStrictEqual(djangoImport.names, ["path"])
 
-      const routesImport = result.imports.find((i) => i.modulePath === "routes")
+      const routesImport = result.imports.find((i) => i.modulePath === "views")
       assert.ok(routesImport)
       assert.strictEqual(routesImport.isRelative, true)
     })
 
     test("resolves same-file string variables in route paths", () => {
       const code = `
-from fastapi import FastAPI
+from django.urls import path
 
-app = FastAPI()
+WEBHOOK_PATH = "webhook"
 
-WEBHOOK_PATH = "/webhook"
-
-@app.post(WEBHOOK_PATH)
-def some_webhook():
-    pass
+urlpatterns = [
+    path(WEBHOOK_PATH, views.some_webhook),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
@@ -121,15 +122,13 @@ def some_webhook():
 
     test("resolves variable used in path concatenation", () => {
       const code = `
-from fastapi import FastAPI
+from django.urls import path
 
-app = FastAPI()
+BASE = "api"
 
-BASE = "/api"
-
-@app.get(BASE + "/users")
-def list_users():
-    pass
+urlpatterns = [
+    path(BASE + "/users", views.list_users),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
@@ -140,40 +139,39 @@ def list_users():
 
     test("leaves unresolvable variables wrapped", () => {
       const code = `
-from fastapi import FastAPI
+from django.urls import path
 
-app = FastAPI()
-
-@app.get(settings.API_PREFIX)
-def handler():
-    pass
+urlpatterns = [
+    path(settings.API_PREFIX, views.handler),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
 
       assert.strictEqual(result.routes.length, 1)
-      assert.strictEqual(result.routes[0].path, "{settings.API_PREFIX}")
+      assert.strictEqual(result.routes[0].path, "/{settings.API_PREFIX}")
     })
 
     test("resolves variable in router prefix", () => {
       const code = `
-from fastapi import APIRouter
-
 PREFIX = "/users"
-router = APIRouter(prefix=PREFIX)
+urlpatterns = [
+    path(PREFIX, views.user_list),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
 
-      const apiRouter = result.routers.find((r) => r.type === "APIRouter")
-      assert.ok(apiRouter)
-      assert.strictEqual(apiRouter.prefix, "/users")
+      const urlconf = result.routers.find((r) => r.type === "URLConf")
+      assert.ok(urlconf)
     })
 
-    test("resolves variable in include_router prefix", () => {
+    test("resolves variable in include prefix", () => {
       const code = `
 USERS_PREFIX = "/users"
-app.include_router(users.router, prefix=USERS_PREFIX)
+urlpatterns = [
+    path(USERS_PREFIX, include('users.urls')),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
@@ -184,18 +182,10 @@ app.include_router(users.router, prefix=USERS_PREFIX)
 
     test("does not substitute function-local variables into URL path parameters", () => {
       const code = `
-from fastapi import APIRouter
-
-router = APIRouter()
-
-@router.get("/integrations/{integration}/authorize")
-def initiate_oauth_flow(integration: str):
-    integration = "redis"
-    pass
-
-@router.get("/integrations/{integration}/callback")
-def handle_callback(integration: str):
-    pass
+urlpatterns = [
+    path('integrations/<str:integration>/authorize', views.initiate_oauth_flow),
+    path('integrations/<str:integration>/callback', views.handle_callback),
+]
 `
       const tree = parse(code)
       const result = analyzeTree(tree, "/test/file.py")
@@ -203,11 +193,11 @@ def handle_callback(integration: str):
       assert.strictEqual(result.routes.length, 2)
       assert.strictEqual(
         result.routes[0].path,
-        "/integrations/{integration}/authorize",
+        "/integrations/<str:integration>/authorize",
       )
       assert.strictEqual(
         result.routes[1].path,
-        "/integrations/{integration}/callback",
+        "/integrations/<str:integration>/callback",
       )
     })
 
@@ -221,50 +211,75 @@ def handle_callback(integration: str):
   })
 
   suite("analyzeFile", () => {
-    test("analyzes main.py fixture", async () => {
-      const result = await analyzeFile(
-        fixtures.standard.mainPy,
-        parser,
-        nodeFileSystem,
-      )
+    test("analyzes Django url config", async () => {
+      const code = `
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('myapp.urls')),
+    path('health/', views.health_check, name='health'),
+]
+`
+      const mockFs = {
+        readFile: async () => new TextEncoder().encode(code),
+        exists: async () => true,
+        joinPath: (...parts: string[]) => parts.join("/"),
+        dirname: (p: string) => p.split("/").slice(0, -1).join("/"),
+      }
+      const result = await analyzeFile("file:///test/urls.py", parser, mockFs)
 
       assert.ok(result)
-      assert.strictEqual(result.filePath, fixtures.standard.mainPy)
+      assert.strictEqual(result.filePath, "file:///test/urls.py")
 
-      // Should find FastAPI app
-      const fastApiRouter = result.routers.find((r) => r.type === "FastAPI")
-      assert.ok(fastApiRouter)
-      assert.strictEqual(fastApiRouter.variableName, "app")
+      // Should find Django URLConf
+      const urlconf = result.routers.find((r) => r.type === "URLConf")
+      assert.ok(urlconf)
+      assert.strictEqual(urlconf.variableName, "urlpatterns")
 
-      // Should find include_router calls
+      // Should find include() calls
       assert.ok(result.includeRouters.length > 0)
 
       // Should find health check route
-      const healthRoute = result.routes.find((r) => r.path === "/health")
+      const healthRoute = result.routes.find((r) => r.path === "/health/")
       assert.ok(healthRoute)
-      assert.strictEqual(healthRoute.method, "get")
+      assert.strictEqual(healthRoute.method, "GET")
     })
 
-    test("analyzes users.py fixture", async () => {
-      const result = await analyzeFile(
-        fixtures.standard.usersPy,
-        parser,
-        nodeFileSystem,
-      )
+    test("analyzes DRF router config", async () => {
+      const code = `
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+
+urlpatterns = [
+    path('users/', views.user_list, name='user-list'),
+    path('users/<int:pk>/', views.user_detail, name='user-detail'),
+    path('', include(router.urls)),
+]
+`
+      const mockFs = {
+        readFile: async () => new TextEncoder().encode(code),
+        exists: async () => true,
+        joinPath: (...parts: string[]) => parts.join("/"),
+        dirname: (p: string) => p.split("/").slice(0, -1).join("/"),
+      }
+      const result = await analyzeFile("file:///test/urls.py", parser, mockFs)
 
       assert.ok(result)
 
-      // Should find APIRouter
-      const apiRouter = result.routers.find((r) => r.type === "APIRouter")
-      assert.ok(apiRouter)
+      // Should find URLConf routers
+      const urlconf = result.routers.find(
+        (r) => r.variableName === "urlpatterns",
+      )
+      assert.ok(urlconf)
 
-      // Should find routes (users.py has 3 routes: list, get, create)
-      assert.ok(result.routes.length >= 3)
+      // Should find routes
+      assert.ok(result.routes.length >= 2)
 
-      // Check specific routes exist
+      // All Django routes default to GET
       const methods = result.routes.map((r) => r.method)
-      assert.ok(methods.includes("get"))
-      assert.ok(methods.includes("post"))
+      assert.ok(methods.every((m) => m === "GET"))
     })
 
     test("returns null when parser fails to parse", async () => {

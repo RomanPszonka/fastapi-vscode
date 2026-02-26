@@ -8,7 +8,7 @@ function makeRouterNode(
 ): RouterNode {
   return {
     filePath: "test.py",
-    type: "APIRouter",
+    type: "URLConf",
     prefix: "",
     tags: [],
     line: 1,
@@ -22,7 +22,7 @@ function makeRouterNode(
 function makeAppNode(opts: Partial<RouterNode> = {}): RouterNode {
   return makeRouterNode({
     variableName: "app",
-    type: "FastAPI",
+    type: "Django",
     ...opts,
   })
 }

@@ -44,8 +44,8 @@ function collectFlatRouters(
     toRouteDefinition(r, fullPrefix, node.filePath),
   )
 
-  // Add this router (skip the root FastAPI app and routers with no routes)
-  if (node.type === "APIRouter" && routes.length > 0) {
+  // Add this router (skip the root Django app and routers with no routes)
+  if (node.type === "URLConf" && routes.length > 0) {
     routers.push({
       name: node.variableName,
       prefix: fullPrefix,
