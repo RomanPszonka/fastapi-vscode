@@ -51,7 +51,7 @@ suite("routerResolver", () => {
       assert.strictEqual(healthRoute.function, "health")
     })
 
-    test("follows include_router to child routers", async () => {
+    test("follows include() to child routers", async () => {
       const result = await buildRouterGraph(
         fixtures.standard.mainPy,
         parser,
@@ -184,7 +184,7 @@ suite("routerResolver", () => {
       )
     })
 
-    test("includes router when following include_router chain", async () => {
+    test("includes router when following include() chain", async () => {
       const result = await buildRouterGraph(
         fixtures.standard.mainPy,
         parser,
@@ -346,7 +346,7 @@ suite("routerResolver", () => {
       )
     })
 
-    test("discovers nested routers (router.include_router)", async () => {
+    test("discovers nested routers (router.include())", async () => {
       const result = await buildRouterGraph(
         fixtures.nestedRouter.mainPy,
         parser,
@@ -406,10 +406,10 @@ suite("routerResolver", () => {
         tokensChild.router.routes.length >= 2,
         "tokens router should have routes",
       )
-      // Verify tag merging from include_router(tokens_router, tags=["tokens"])
+      // Verify tag merging from include()(tokens_router, tags=["tokens"])
       assert.ok(
         tokensChild.router.tags.includes("tokens"),
-        "tokens router should have merged tags from include_router call",
+        "tokens router should have merged tags from include() call",
       )
 
       const settingsChild = appsChild.router.children.find(
@@ -440,7 +440,7 @@ suite("routerResolver", () => {
       assert.strictEqual(mountChild.router.type, "Django")
     })
 
-    test("merges tags from include_router call with router tags", async () => {
+    test("merges tags from include() call with router tags", async () => {
       const result = await buildRouterGraph(
         fixtures.standard.mainPy,
         parser,
@@ -453,14 +453,14 @@ suite("routerResolver", () => {
         (c) => c.router.prefix === "/users",
       )
       assert.ok(usersChild, "Should have users router")
-      // Router has tags=["users"], include_router adds tags=["user-management"]
+      // Router has tags=["users"], include() adds tags=["user-management"]
       assert.ok(
         usersChild.router.tags.includes("users"),
         "Should keep router's own tags",
       )
       assert.ok(
         usersChild.router.tags.includes("user-management"),
-        "Should include tags from include_router call",
+        "Should include tags from include() call",
       )
     })
 
@@ -484,7 +484,7 @@ suite("routerResolver", () => {
     test("discovers nested routers via __init__.py re-export", async () => {
       // This tests the pattern: main.py imports from integrations (package),
       // integrations/__init__.py re-exports router from router.py,
-      // router.py has include_router calls for nested routers
+      // router.py has include() calls for nested routers
       const result = await buildRouterGraph(
         fixtures.reexport.mainPy,
         parser,

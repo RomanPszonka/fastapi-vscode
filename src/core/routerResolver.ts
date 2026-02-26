@@ -85,7 +85,7 @@ async function buildRouterGraphInternal(
   let resolvedEntryUri = entryFileUri
 
   log(
-    `Analyzed "${resolvedEntryUri}": ${analysis.routes.length} routes, ${analysis.routers.length} routers, ${analysis.includeRouters.length} include_router calls`,
+    `Analyzed "${resolvedEntryUri}": ${analysis.routes.length} routes, ${analysis.routers.length} routers, ${analysis.includeRouters.length} include() calls`,
   )
 
   // Find Django urlpatterns (filter by targetVariable if specified)
@@ -141,10 +141,10 @@ async function buildRouterGraphInternal(
     children: [],
   }
 
-  // Process include_router calls to find child routers
+  // Process include() calls to find child routers
   for (const include of analysis.includeRouters) {
     log(
-      `Resolving include_router: ${include.router} (prefix: ${include.prefix || "none"})`,
+      `Resolving include(): ${include.router} (prefix: ${include.prefix || "none"})`,
     )
     const childRouter = await resolveRouterReference(
       include.router,
@@ -156,7 +156,7 @@ async function buildRouterGraphInternal(
       visited,
     )
     if (childRouter) {
-      // Merge tags from include_router call with the router's own tags
+      // Merge tags from include() call with the router's own tags
       if (include.tags.length > 0) {
         childRouter.tags = [...new Set([...childRouter.tags, ...include.tags])]
       }
@@ -193,7 +193,7 @@ async function buildRouterGraphInternal(
 
 /**
  * Resolves a router/app reference to its RouterNode.
- * Used for include_router and mount calls.
+ * Used for include and mount calls.
  *
  * Handles both simple references (e.g., "router") and dotted references
  * (e.g., "api_routes.router" where api_routes is an imported module).
@@ -238,13 +238,13 @@ async function resolveRouterReference(
       children: [],
     }
 
-    // Process include_router calls owned by this router (nested routers)
+    // Process include() calls owned by this router (nested routers)
     const routerIncludes = analysis.includeRouters.filter(
       (inc) => inc.owner === moduleName,
     )
     for (const include of routerIncludes) {
       log(
-        `Resolving nested include_router: ${include.router} (owner: ${moduleName}, prefix: ${include.prefix || "none"})`,
+        `Resolving nested include(): ${include.router} (owner: ${moduleName}, prefix: ${include.prefix || "none"})`,
       )
       const childRouter = await resolveRouterReference(
         include.router,
@@ -355,13 +355,13 @@ async function resolveRouterReference(
         children: [],
       }
 
-      // Process include_router calls owned by this router (nested routers)
+      // Process include() calls owned by this router (nested routers)
       const routerIncludes = importedAnalysis.includeRouters.filter(
         (inc) => inc.owner === attributeName,
       )
       for (const include of routerIncludes) {
         log(
-          `Resolving nested include_router: ${include.router} (owner: ${attributeName}, prefix: ${include.prefix || "none"})`,
+          `Resolving nested include(): ${include.router} (owner: ${attributeName}, prefix: ${include.prefix || "none"})`,
         )
         const childRouter = await resolveRouterReference(
           include.router,

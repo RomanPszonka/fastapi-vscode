@@ -167,26 +167,26 @@ def regular_function():
 
   suite("importExtractor", () => {
     test("extracts simple import", () => {
-      const code = "import fastapi"
+      const code = "import django"
       const tree = parse(code)
       const imports = findNodesByType(tree.rootNode, "import_statement")
       const result = importExtractor(imports[0])
 
       assert.ok(result)
-      assert.strictEqual(result.modulePath, "fastapi")
-      assert.deepStrictEqual(result.names, ["fastapi"])
+      assert.strictEqual(result.modulePath, "django")
+      assert.deepStrictEqual(result.names, ["django"])
       assert.strictEqual(result.isRelative, false)
     })
 
     test("extracts from import", () => {
-      const code = "from fastapi import FastAPI"
+      const code = "from django.urls import path"
       const tree = parse(code)
       const imports = findNodesByType(tree.rootNode, "import_from_statement")
       const result = importExtractor(imports[0])
 
       assert.ok(result)
-      assert.strictEqual(result.modulePath, "fastapi")
-      assert.deepStrictEqual(result.names, ["FastAPI"])
+      assert.strictEqual(result.modulePath, "django.urls")
+      assert.deepStrictEqual(result.names, ["path"])
       assert.strictEqual(result.isRelative, false)
     })
 
@@ -228,14 +228,14 @@ def regular_function():
     })
 
     test("extracts multiple imports", () => {
-      const code = "from fastapi import FastAPI, APIRouter"
+      const code = "from django.urls import path, include"
       const tree = parse(code)
       const imports = findNodesByType(tree.rootNode, "import_from_statement")
       const result = importExtractor(imports[0])
 
       assert.ok(result)
-      assert.ok(result.names.includes("FastAPI"))
-      assert.ok(result.names.includes("APIRouter"))
+      assert.ok(result.names.includes("path"))
+      assert.ok(result.names.includes("include"))
     })
 
     test("returns null for non-import node", () => {

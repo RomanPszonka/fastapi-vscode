@@ -10,10 +10,9 @@ import type { Parser } from "./core/parser"
 import { findProjectRoot, uriPath } from "./core/pathUtils"
 import { buildRouterGraph } from "./core/routerResolver"
 import { routerNodeToAppDefinition } from "./core/transformer"
-import { collectRoutes, countRouters } from "./core/treeUtils"
+import { collectRoutes } from "./core/treeUtils"
 import type { AppDefinition } from "./core/types"
 import { log } from "./utils/logger"
-import { createTimer, trackEntrypointDetected } from "./utils/telemetry"
 import { vscodeFileSystem } from "./vscode/vscodeFileSystem"
 
 export type { EntryPoint }
@@ -131,8 +130,6 @@ export async function discoverDjangoApps(
   const apps: AppDefinition[] = []
 
   for (const folder of workspaceFolders) {
-    const folderTimer = createTimer()
-    let detectionMethod: "config" | "pyproject" | "heuristic" = "heuristic"
     const folderApps: AppDefinition[] = []
     const config = vscode.workspace.getConfiguration("django", folder.uri)
     const customEntryPoint = config.get<string>("entryPoint")
@@ -155,17 +152,14 @@ export async function discoverDjangoApps(
 
       log(`Using custom entry point: ${customEntryPoint}`)
       candidates = [{ filePath: entryUri.toString(), variableName }]
-      detectionMethod = "config"
     } else {
       // Otherwise, check pyproject.toml or auto-detect
       const pyprojectEntry = await parsePyprojectForEntryPoint(folder.uri)
       if (pyprojectEntry) {
         candidates = [pyprojectEntry]
-        detectionMethod = "pyproject"
       } else {
         const detected = await findAllDjangoFiles(folder)
         candidates = detected.map((filePath) => ({ filePath }))
-        detectionMethod = "heuristic"
         log(
           `Found ${candidates.length} candidate Django file(s) in ${folder.name}`,
         )
@@ -208,15 +202,6 @@ export async function discoverDjangoApps(
         `Found ${folderApps.length} Django app(s) with ${folderRoutes.length} route(s) in ${folder.name}`,
       )
     }
-
-    // Track entrypoint detection per workspace folder
-    trackEntrypointDetected({
-      duration_ms: folderTimer(),
-      method: detectionMethod,
-      success: folderApps.length > 0,
-      routes_count: folderRoutes.length,
-      routers_count: countRouters(folderApps),
-    })
   }
 
   if (apps.length === 0) {

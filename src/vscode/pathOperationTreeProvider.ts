@@ -288,7 +288,7 @@ export class PathOperationTreeProvider
             docstringSection,
         )
         routeItem.command = {
-          command: "fastapi-vscode.goToPathOperation",
+          command: "django-vscode.goToPathOperation",
           title: "Go to Definition",
           arguments: [element],
         }

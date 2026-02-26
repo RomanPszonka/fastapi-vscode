@@ -6,8 +6,6 @@ const production = process.argv.includes("--production")
 const watch = process.argv.includes("--watch")
 const noBundleForCoverage = process.argv.includes("--no-bundle")
 
-const POSTHOG_API_KEY = "phc_s0Qx8NxueJvnqe4YE7NEKYNosJr8aZ81tIByuzm464X"
-
 function copyWasmFiles() {
   const wasmDestDir = path.join(import.meta.dirname, "dist", "wasm")
   mkdirSync(wasmDestDir, { recursive: true })
@@ -32,21 +30,8 @@ function copyWasmFiles() {
   console.log("Copied tree-sitter-python.wasm -> dist/wasm/")
 }
 
-function copyWebviewAssets() {
-  const destDir = path.join(import.meta.dirname, "dist", "webview", "logs")
-  mkdirSync(destDir, { recursive: true })
-
-  const srcDir = path.join(import.meta.dirname, "src", "cloud", "ui", "panel")
-  copyFileSync(
-    path.join(srcDir, "styles.css"),
-    path.join(destDir, "styles.css"),
-  )
-  console.log("Copied webview assets -> dist/webview/logs/")
-}
-
 async function main() {
   copyWasmFiles()
-  copyWebviewAssets()
 
   const testEntryPoints = !production ? globSync("src/test/**/*.test.ts") : []
   const sourceEntryPoints = noBundleForCoverage
@@ -63,9 +48,6 @@ async function main() {
     logLevel: "info",
     define: {
       "process.env.NODE_ENV": production ? '"production"' : '"development"',
-      "process.env.POSTHOG_API_KEY": production
-        ? JSON.stringify(POSTHOG_API_KEY)
-        : '""',
       __DIST_ROOT__: JSON.stringify(path.join(import.meta.dirname, "dist")),
     },
   }
@@ -81,22 +63,6 @@ async function main() {
     outbase: "src",
     ...(noBundleForCoverage ? {} : { external: ["vscode", "web-tree-sitter"] }),
   })
-
-  // Webview script (runs inside VS Code logs panel webview)
-  const webviewCtx = noBundleForCoverage
-    ? null
-    : await esbuild.context({
-        entryPoints: ["src/cloud/ui/panel/webview.ts"],
-        bundle: true,
-        minify: production,
-        sourcemap: !production,
-        sourcesContent: false,
-        format: "iife",
-        platform: "browser",
-        target: "es2022",
-        outfile: "dist/webview/logs/webview.js",
-        logLevel: "info",
-      })
 
   // Browser build (vscode.dev) - skip for unbundled builds
   const browserCtx = noBundleForCoverage
@@ -114,21 +80,10 @@ async function main() {
         },
         // vscode is provided by the runtime; web-tree-sitter is bundled but
         // internally references these Node.js modules for environment detection
-        // posthog-node uses Node.js APIs, so telemetry is disabled in browser
-        // util and child_process are used for version detection but not in browser
-        external: [
-          "vscode",
-          "fs/promises",
-          "module",
-          "posthog-node",
-          "util",
-          "child_process",
-          "node:util",
-          "node:child_process",
-        ],
+        external: ["vscode", "fs/promises", "module"],
       })
 
-  const allContexts = [nodeCtx, browserCtx, webviewCtx].filter(Boolean)
+  const allContexts = [nodeCtx, browserCtx].filter(Boolean)
 
   if (watch) {
     await Promise.all(allContexts.map((ctx) => ctx.watch()))

@@ -144,7 +144,7 @@ export function extractPathFromNode(node: Node): string {
     default:
       // Dynamic values: variable, attribute access, or function call.
       // Use \uE000 (Unicode private use) as sentinel so resolveVariables can
-      // distinguish these from FastAPI path parameters like {id}.
+      // distinguish these from Django path parameters like <int:id>.
       return `\uE000${node.text}\uE000`
   }
 }

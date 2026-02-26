@@ -44,12 +44,6 @@
     }
   },
   "contributes": {
-    "authentication": [
-      {
-        "id": "django-vscode",
-        "label": "Django Cloud"
-      }
-    ],
     "commands": [
       {
         "command": "django-vscode.refreshPathOperations",
@@ -83,36 +77,6 @@
         "title": "Search Path Operations...",
         "category": "Django",
         "icon": "$(search)"
-      },
-      {
-        "command": "django-vscode.linkApp",
-        "title": "Link Project",
-        "category": "Django Cloud"
-      },
-      {
-        "command": "django-vscode.unlinkApp",
-        "title": "Unlink Project",
-        "category": "Django Cloud"
-      },
-      {
-        "command": "django-vscode.signIn",
-        "title": "Sign In",
-        "category": "Django Cloud"
-      },
-      {
-        "command": "django-vscode.signOut",
-        "title": "Sign Out",
-        "category": "Django Cloud"
-      },
-      {
-        "command": "django-vscode.deploy",
-        "title": "Deploy Application",
-        "category": "Django Cloud"
-      },
-      {
-        "command": "django-vscode.viewLogs",
-        "title": "Stream Application Logs",
-        "category": "Django Cloud"
       }
     ],
     "keybindings": [
@@ -131,30 +95,6 @@
         {
           "command": "django-vscode.goToRouter",
           "when": "false"
-        },
-        {
-          "command": "django-vscode.linkApp",
-          "when": "config.django.cloud.enabled"
-        },
-        {
-          "command": "django-vscode.unlinkApp",
-          "when": "config.django.cloud.enabled"
-        },
-        {
-          "command": "django-vscode.signIn",
-          "when": "config.django.cloud.enabled"
-        },
-        {
-          "command": "django-vscode.deploy",
-          "when": "config.django.cloud.enabled"
-        },
-        {
-          "command": "django-vscode.signOut",
-          "when": "config.django.cloud.enabled"
-        },
-        {
-          "command": "django-vscode.viewLogs",
-          "when": "config.django.cloud.enabled"
         }
       ],
       "view/title": [
@@ -189,13 +129,6 @@
           "title": "Django",
           "icon": "media/icons/logo-outline.svg"
         }
-      ],
-      "panel": [
-        {
-          "id": "django-cloud-panel",
-          "title": "Django Cloud",
-          "icon": "media/icons/logo-outline.svg"
-        }
       ]
     },
     "views": {
@@ -204,14 +137,6 @@
           "id": "path-operation-explorer",
           "name": "Path Operation Explorer",
           "icon": "media/icons/logo-outline.svg"
-        }
-      ],
-      "django-cloud-panel": [
-        {
-          "id": "django-cloud-logs",
-          "name": "Logs",
-          "type": "webview",
-          "when": "config.django.cloud.enabled"
         }
       ]
     },
@@ -262,32 +187,6 @@
             }
           },
           {
-            "id": "cloud-deploy",
-            "title": "Deploy to Django Cloud",
-            "description": "Deploy your Django app with one click. You'll be prompted to sign in and link your project if needed.\n\n[Deploy](command:django-vscode.deploy)",
-            "media": {
-              "image": "media/walkthrough/deploy.gif",
-              "altText": "Deploying a Django app to Django Cloud"
-            },
-            "when": "config.django.cloud.enabled",
-            "completionEvents": [
-              "onCommand:django-vscode.deploy"
-            ]
-          },
-          {
-            "id": "cloud-logs",
-            "title": "View Django Cloud Application Logs",
-            "description": "Stream logs for your Django Cloud deployed app in real-time directly within VS Code.\n\n[View Logs](command:django-vscode.viewLogs)",
-            "media": {
-              "image": "media/walkthrough/logs.gif",
-              "altText": "Streaming application logs in Django Cloud panel"
-            },
-            "when": "config.django.cloud.enabled",
-            "completionEvents": [
-              "onCommand:django-vscode.viewLogs"
-            ]
-          },
-          {
             "id": "feedback",
             "title": "Give Feedback & Get Help",
             "description": "Help us improve! Report bugs, request features, or contribute to the project.\n\n[Report an Issue](command:django-vscode.reportIssue)\n[View on GitHub](https://github.com/django/django-vscode)",
@@ -313,18 +212,6 @@
           "default": true,
           "scope": "resource",
           "description": "Show CodeLens links above test client calls (e.g., client.get('/items')) to navigate to the corresponding route definition."
-        },
-        "django.cloud.enabled": {
-          "type": "boolean",
-          "default": true,
-          "scope": "window",
-          "description": "Enable Django Cloud integration (status bar, link/unlink commands)."
-        },
-        "django.telemetry.enabled": {
-          "type": "boolean",
-          "default": true,
-          "scope": "window",
-          "description": "Enable telemetry to help improve the extension. No personal data is collected."
         }
       }
     }
@@ -359,8 +246,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "posthog-node": "^5.24.1",
-    "tinytar": "^0.1.0",
     "toml": "^3.0.0",
     "web-tree-sitter": "^0.26.3"
   },

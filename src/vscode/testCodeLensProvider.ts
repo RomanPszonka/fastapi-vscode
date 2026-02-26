@@ -23,7 +23,6 @@ import {
 } from "../core/pathUtils"
 import { collectRoutes } from "../core/treeUtils"
 import type { AppDefinition, SourceLocation } from "../core/types"
-import { trackCodeLensProvided } from "../utils/telemetry"
 
 interface TestClientCall {
   method: string
@@ -39,8 +38,6 @@ export class TestCodeLensProvider implements CodeLensProvider {
   private _onDidChangeCodeLenses = new EventEmitter<void>()
   readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event
 
-  private trackedFiles = new Set<string>()
-
   constructor(parser: Parser, apps: AppDefinition[]) {
     this.parser = parser
     this.apps = apps
@@ -48,7 +45,6 @@ export class TestCodeLensProvider implements CodeLensProvider {
 
   setApps(apps: AppDefinition[]): void {
     this.apps = apps
-    this.trackedFiles.clear()
     this._onDidChangeCodeLenses.fire()
   }
 
@@ -92,13 +88,6 @@ export class TestCodeLensProvider implements CodeLensProvider {
           }),
         )
       }
-    }
-
-    // Track once per file per session (first open only, edits won't update the count)
-    const fileKey = document.uri.toString()
-    if (testClientCalls.length > 0 && !this.trackedFiles.has(fileKey)) {
-      this.trackedFiles.add(fileKey)
-      trackCodeLensProvided(testClientCalls.length, codeLenses.length)
     }
 
     return codeLenses
