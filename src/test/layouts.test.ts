@@ -31,7 +31,7 @@ suite("Project Layouts", () => {
       projectRoot,
       nodeFileSystem,
     )
-    assert.ok(graph, "Should find FastAPI app")
+    assert.ok(graph, "Should find Django app")
 
     const appDef = routerNodeToAppDefinition(graph, fixtures.standard.root)
     const allRoutes = collectRoutes([appDef])
@@ -75,7 +75,7 @@ suite("Project Layouts", () => {
       projectRoot,
       nodeFileSystem,
     )
-    assert.ok(graph, "Should find FastAPI app")
+    assert.ok(graph, "Should find Django app")
 
     const appDef = routerNodeToAppDefinition(graph, fixtures.flat.root)
     const allRoutes = collectRoutes([appDef])
@@ -115,7 +115,7 @@ suite("Project Layouts", () => {
       projectRoot,
       nodeFileSystem,
     )
-    assert.ok(graph, "Should find FastAPI app")
+    assert.ok(graph, "Should find Django app")
 
     const appDef = routerNodeToAppDefinition(graph, fixtures.namespace.root)
     const allRoutes = collectRoutes([appDef])
@@ -155,7 +155,7 @@ suite("Project Layouts", () => {
       projectRoot,
       nodeFileSystem,
     )
-    assert.ok(graph, "Should find FastAPI app")
+    assert.ok(graph, "Should find Django app")
 
     const appDef = routerNodeToAppDefinition(graph, fixtures.reexport.root)
     const allRoutes = collectRoutes([appDef])

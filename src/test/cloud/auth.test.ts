@@ -198,7 +198,7 @@ suite("cloud/auth", () => {
         const sessions = await provider.getSessions()
 
         assert.strictEqual(sessions.length, 1)
-        assert.strictEqual(sessions[0].account.label, "FastAPI Cloud")
+        assert.strictEqual(sessions[0].account.label, "Django Cloud")
 
         await provider.dispose()
       })
@@ -215,7 +215,7 @@ suite("cloud/auth", () => {
         const sessions = await provider.getSessions()
 
         assert.strictEqual(sessions.length, 1)
-        assert.strictEqual(sessions[0].account.label, "FastAPI Cloud")
+        assert.strictEqual(sessions[0].account.label, "Django Cloud")
 
         await provider.dispose()
       })
@@ -432,7 +432,7 @@ suite("cloud/auth", () => {
         await provider.createSession()
 
         assert.ok(
-          infoStub.calledWith("Signed in to FastAPI Cloud as new@example.com"),
+          infoStub.calledWith("Signed in to Django Cloud as new@example.com"),
         )
 
         await provider.dispose()
@@ -449,7 +449,7 @@ suite("cloud/auth", () => {
 
         await assert.rejects(() => provider.createSession(), {
           message:
-            "Unable to connect to FastAPI Cloud. Please check your network connection and try again.",
+            "Unable to connect to Django Cloud. Please check your network connection and try again.",
         })
 
         await provider.dispose()

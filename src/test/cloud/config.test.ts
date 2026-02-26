@@ -92,7 +92,7 @@ suite("cloud/config", () => {
 
       assert.ok(fsStub.fake.delete.calledOnce)
       const [uri, options] = fsStub.fake.delete.firstCall.args
-      assert.ok((uri as vscode.Uri).path.endsWith(".fastapicloud"))
+      assert.ok((uri as vscode.Uri).path.endsWith(".djangocloud"))
       assert.deepStrictEqual(options, { recursive: true })
     })
   })

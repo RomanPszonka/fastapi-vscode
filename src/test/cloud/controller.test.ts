@@ -61,7 +61,7 @@ const testTeam: Team = { id: "t1", name: "Test Team", slug: "test-team" }
 const testApp: App = {
   id: "a1",
   slug: "test-app",
-  url: "https://test-app.fastapicloud.dev",
+  url: "https://test-app.djangocloud.dev",
   team_id: "t1",
 }
 
@@ -348,7 +348,7 @@ suite("cloud/controller", () => {
 
       assert.strictEqual(
         deps.statusBar.text,
-        "$(cloud) Sign into FastAPI Cloud",
+        "$(cloud) Sign into Django Cloud",
       )
 
       dispose(deps)
@@ -385,7 +385,7 @@ suite("cloud/controller", () => {
 
       assert.strictEqual(
         deps.statusBar.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
 
       dispose(deps)
@@ -443,7 +443,7 @@ suite("cloud/controller", () => {
       // Trigger status bar update via refreshAll
       await deps.controller.refreshAll()
 
-      assert.strictEqual(deps.statusBar.text, "$(warning) FastAPI Cloud")
+      assert.strictEqual(deps.statusBar.text, "$(warning) Django Cloud")
       assert.ok(warnStub.calledOnce)
 
       dispose(deps)
@@ -487,7 +487,7 @@ suite("cloud/controller", () => {
 
       assert.strictEqual(
         deps.statusBar.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
       assert.ok(!warnStub.called)
 
@@ -688,7 +688,7 @@ suite("cloud/controller", () => {
       // Verify state is not_configured by checking status bar shows sign-in
       assert.strictEqual(
         deps.statusBar.text,
-        "$(cloud) Sign into FastAPI Cloud",
+        "$(cloud) Sign into Django Cloud",
       )
 
       dispose(deps)
@@ -728,7 +728,7 @@ suite("cloud/controller", () => {
       // Verify state is error by checking status bar shows setup (error state shows setup)
       assert.strictEqual(
         deps.statusBar.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
 
       dispose(deps)
@@ -897,7 +897,7 @@ suite("cloud/controller", () => {
     const testApp2: any = {
       id: "a2",
       slug: "test-app-2",
-      url: "https://test-app-2.fastapicloud.dev",
+      url: "https://test-app-2.djangocloud.dev",
       team_id: "t1",
     }
 
@@ -1034,7 +1034,7 @@ suite("cloud/controller", () => {
       await deps.controller.refreshAll()
       assert.strictEqual(
         deps.statusBar.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
 
       dispose(deps)
@@ -1294,7 +1294,7 @@ suite("cloud/controller", () => {
       // All workspace states should be cleared - status bar shows sign-in
       assert.strictEqual(
         deps.statusBar.text,
-        "$(cloud) Sign into FastAPI Cloud",
+        "$(cloud) Sign into Django Cloud",
       )
 
       dispose(deps)

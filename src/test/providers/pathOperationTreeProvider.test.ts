@@ -306,7 +306,7 @@ suite("PathOperationTreeProvider", () => {
       assert.ok(treeItem.command, "Route should have a command")
       assert.strictEqual(
         treeItem.command?.command,
-        "fastapi-vscode.goToPathOperation",
+        "django-vscode.goToPathOperation",
       )
     }
   })
@@ -371,7 +371,7 @@ suite("PathOperationTreeProvider", () => {
     assert.strictEqual(roots.length, 1, "Should return one message item")
     assert.strictEqual(roots[0].type, "message")
     if (roots[0].type === "message") {
-      assert.strictEqual(roots[0].text, "No FastAPI app found")
+      assert.strictEqual(roots[0].text, "No Django app found")
     }
   })
 
@@ -387,7 +387,7 @@ suite("PathOperationTreeProvider", () => {
     const msg = emptyProvider.getChildren()[0]
     assert.strictEqual(
       emptyProvider.getTreeItem(msg).label,
-      "No FastAPI app found",
+      "No Django app found",
     )
   })
 

@@ -26,7 +26,7 @@ suite("cloud/ui/statusBar", () => {
 
       await manager.update()
 
-      assert.strictEqual(statusBarItem.text, "$(cloud) Sign into FastAPI Cloud")
+      assert.strictEqual(statusBarItem.text, "$(cloud) Sign into Django Cloud")
     })
 
     test("shows deploy when no workspace folder", async () => {
@@ -43,7 +43,7 @@ suite("cloud/ui/statusBar", () => {
 
       assert.strictEqual(
         statusBarItem.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
     })
 
@@ -61,7 +61,7 @@ suite("cloud/ui/statusBar", () => {
 
       assert.strictEqual(
         statusBarItem.text,
-        "$(rocket) Deploy to FastAPI Cloud",
+        "$(rocket) Deploy to Django Cloud",
       )
     })
 
@@ -101,7 +101,7 @@ suite("cloud/ui/statusBar", () => {
 
       await manager.update()
 
-      assert.strictEqual(statusBarItem.text, "$(warning) FastAPI Cloud")
+      assert.strictEqual(statusBarItem.text, "$(warning) Django Cloud")
     })
 
     test("shows sign in on error", async () => {
@@ -118,7 +118,7 @@ suite("cloud/ui/statusBar", () => {
 
       await manager.update()
 
-      assert.strictEqual(statusBarItem.text, "$(cloud) Sign into FastAPI Cloud")
+      assert.strictEqual(statusBarItem.text, "$(cloud) Sign into Django Cloud")
     })
   })
 
@@ -140,7 +140,7 @@ suite("cloud/ui/statusBar", () => {
 
       manager.show()
 
-      assert.strictEqual(statusBarItem.text, "$(cloud) FastAPI Cloud")
+      assert.strictEqual(statusBarItem.text, "$(cloud) Django Cloud")
       assert.ok((statusBarItem.show as sinon.SinonStub).calledOnce)
       assert.ok(listenerStub.calledOnce)
     })

@@ -14,13 +14,13 @@ const testTeam: Team = { id: "t1", name: "Test Team", slug: "test-team" }
 const testApp: App = {
   id: "a1",
   slug: "test-app",
-  url: "https://test-app.fastapicloud.dev",
+  url: "https://test-app.djangocloud.dev",
   team_id: "t1",
 }
 const testApp2: App = {
   id: "a2",
   slug: "test-app-2",
-  url: "https://test-app-2.fastapicloud.dev",
+  url: "https://test-app-2.djangocloud.dev",
   team_id: "t1",
 }
 

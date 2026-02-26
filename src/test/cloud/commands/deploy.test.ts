@@ -20,7 +20,7 @@ suite("cloud/commands/deploy", () => {
       ".mypy_cache/cache.json",
       ".pytest_cache/v/cache",
       ".gitignore",
-      ".fastapicloudignore",
+      ".djangocloudignore",
       "file.pyc",
       "nested/folder/file.pyc",
       ".env",
@@ -95,12 +95,12 @@ suite("cloud/commands/deploy", () => {
     assert.ok(errorStub.calledOnce)
     assert.strictEqual(
       errorStub.firstCall.args[0],
-      "Please sign in to FastAPI Cloud first.",
+      "Please sign in to Django Cloud first.",
     )
     assert.ok(executeCommandStub.calledOnce)
     assert.strictEqual(
       executeCommandStub.firstCall.args[0],
-      "fastapi-vscode.signIn",
+      "django-vscode.signIn",
     )
   })
 
@@ -233,7 +233,7 @@ suite("cloud/commands/deploy", () => {
       status: DeploymentStatus.waiting_upload,
       url: "https://app.example.com",
       dashboard_url:
-        "https://dashboard.fastapicloud.com/team-slug/apps/my-app/deployments",
+        "https://dashboard.djangocloud.com/team-slug/apps/my-app/deployments",
     }
     const mockFailedDeployment: Deployment = {
       ...mockDeployment,
@@ -277,7 +277,7 @@ suite("cloud/commands/deploy", () => {
     assert.ok(openExternalStub.calledOnce)
     assert.strictEqual(
       openExternalStub.firstCall.args[0].toString(),
-      "https://dashboard.fastapicloud.com/team-slug/apps/my-app/deployments",
+      "https://dashboard.djangocloud.com/team-slug/apps/my-app/deployments",
     )
   })
 
@@ -300,7 +300,7 @@ suite("cloud/commands/deploy", () => {
       status: DeploymentStatus.waiting_upload,
       url: "https://app.example.com",
       dashboard_url:
-        "https://dashboard.fastapicloud.com/team-slug/apps/my-app/deployments",
+        "https://dashboard.djangocloud.com/team-slug/apps/my-app/deployments",
     }
 
     const apiService = mockApiService()
@@ -359,7 +359,7 @@ suite("cloud/commands/deploy", () => {
       status: DeploymentStatus.waiting_upload,
       url: "https://app.example.com",
       dashboard_url:
-        "https://dashboard.fastapicloud.com/team-slug/apps/my-app/deployments",
+        "https://dashboard.djangocloud.com/team-slug/apps/my-app/deployments",
     }
 
     const apiService = mockApiService()

@@ -30,7 +30,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       assert.strictEqual(result.variableName, "app")
       assert.strictEqual(result.filePath, fixtures.standard.mainPy)
     })
@@ -93,7 +93,7 @@ suite("routerResolver", () => {
       assert.strictEqual(result, null)
     })
 
-    test("returns null for file without FastAPI/APIRouter", async () => {
+    test("returns null for file without Django/URLConf", async () => {
       const result = await buildRouterGraph(
         fixtures.standard.initPy,
         parser,
@@ -101,11 +101,11 @@ suite("routerResolver", () => {
         nodeFileSystem,
       )
 
-      // __init__.py has no FastAPI or APIRouter
+      // __init__.py has no Django or URLConf
       assert.strictEqual(result, null)
     })
 
-    test("builds graph from APIRouter file", async () => {
+    test("builds graph from URLConf file", async () => {
       const result = await buildRouterGraph(
         fixtures.standard.usersPy,
         parser,
@@ -114,7 +114,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "APIRouter")
+      assert.strictEqual(result.type, "URLConf")
       assert.strictEqual(result.variableName, "router")
 
       // Should have routes (users.py has 3 routes: list, get, create)
@@ -159,7 +159,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result, "Should find router via re-export")
-      assert.strictEqual(result.type, "APIRouter")
+      assert.strictEqual(result.type, "URLConf")
       assert.strictEqual(result.variableName, "router")
 
       assert.ok(
@@ -210,7 +210,7 @@ suite("routerResolver", () => {
       )
     })
 
-    test("prioritizes FastAPI over APIRouter in same file", async () => {
+    test("prioritizes Django over URLConf in same file", async () => {
       const result = await buildRouterGraph(
         fixtures.sameFile.mainPy,
         parser,
@@ -219,7 +219,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       assert.strictEqual(result.variableName, "app")
     })
 
@@ -257,7 +257,7 @@ suite("routerResolver", () => {
       )
 
       const apiRouter = result.children[0]
-      assert.strictEqual(apiRouter.router.type, "APIRouter")
+      assert.strictEqual(apiRouter.router.type, "URLConf")
       assert.strictEqual(apiRouter.router.prefix, "/api")
 
       // Router should have its own routes
@@ -269,7 +269,7 @@ suite("routerResolver", () => {
     })
 
     test("selects specific app by targetVariable", async () => {
-      // Without targetVariable, should pick first FastAPI app (public_app)
+      // Without targetVariable, should pick first Django app (public_app)
       const defaultResult = await buildRouterGraph(
         fixtures.multiApp.mainPy,
         parser,
@@ -291,7 +291,7 @@ suite("routerResolver", () => {
 
       assert.ok(adminResult)
       assert.strictEqual(adminResult.variableName, "admin_app")
-      assert.strictEqual(adminResult.type, "FastAPI")
+      assert.strictEqual(adminResult.type, "Django")
 
       // admin_app has 3 routes: /, /users, /users/{user_id}
       assert.strictEqual(adminResult.routes.length, 3)
@@ -322,7 +322,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       assert.strictEqual(result.variableName, "app")
 
       assert.strictEqual(
@@ -332,7 +332,7 @@ suite("routerResolver", () => {
       )
 
       const tokensRouter = result.children[0]
-      assert.strictEqual(tokensRouter.router.type, "APIRouter")
+      assert.strictEqual(tokensRouter.router.type, "URLConf")
       assert.strictEqual(tokensRouter.router.prefix, "/tokens")
 
       assert.ok(
@@ -355,7 +355,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       assert.strictEqual(result.variableName, "app")
 
       // App includes apps_router with /api prefix
@@ -431,13 +431,13 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       assert.strictEqual(result.variableName, "app")
 
       // root main.py mounts sub_app at /v1
       const mountChild = result.children.find((c) => c.prefix === "/v1")
       assert.ok(mountChild, "Should have child mounted at /v1")
-      assert.strictEqual(mountChild.router.type, "FastAPI")
+      assert.strictEqual(mountChild.router.type, "Django")
     })
 
     test("merges tags from include_router call with router tags", async () => {
@@ -473,7 +473,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
       // Should still have the direct route
       const rootRoute = result.routes.find((r) => r.path === "/")
       assert.ok(rootRoute)
@@ -493,7 +493,7 @@ suite("routerResolver", () => {
       )
 
       assert.ok(result)
-      assert.strictEqual(result.type, "FastAPI")
+      assert.strictEqual(result.type, "Django")
 
       assert.strictEqual(
         result.children.length,

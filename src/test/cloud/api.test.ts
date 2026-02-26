@@ -12,7 +12,7 @@ suite("cloud/api", () => {
       const url = ApiService.getDashboardUrl("my-team", "my-app")
       assert.strictEqual(
         url,
-        "https://dashboard.fastapicloud.com/my-team/apps/my-app/general",
+        "https://dashboard.djangocloud.com/my-team/apps/my-app/general",
       )
     })
   })
@@ -284,7 +284,7 @@ suite("cloud/api", () => {
       const [, options] = fetchStub.firstCall.args
       const headers = options?.headers as Record<string, string>
       assert.strictEqual(headers.Authorization, "Bearer my_token")
-      assert.ok(headers["User-Agent"]?.startsWith("fastapi-vscode/"))
+      assert.ok(headers["User-Agent"]?.startsWith("django-vscode/"))
     })
   })
 })
