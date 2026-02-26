@@ -1,9 +1,11 @@
 # Note: namespace_routes has NO __init__.py (namespace package)
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/items", tags=["items"])
+from django.urls import path
 
 
-@router.get("/")
-def list_items():
+def list_items(request):
     return [{"id": 1, "name": "Widget"}]
+
+
+urlpatterns = [
+    path('', list_items),
+]

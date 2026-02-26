@@ -1,8 +1,10 @@
-from fastapi import APIRouter
-
-router = APIRouter()
+from django.urls import path
 
 
-@router.get("/items")
-def list_items():
+def list_items(request):
     pass
+
+
+urlpatterns = [
+    path('items/', list_items),
+]

@@ -1,13 +1,15 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/neon", tags=["neon"])
+from django.urls import path
 
 
-@router.get("/")
-def get_neon():
+def get_neon(request):
     return {"provider": "neon"}
 
 
-@router.post("/connect")
-def connect_neon():
+def connect_neon(request):
     return {"connected": True}
+
+
+urlpatterns = [
+    path('', get_neon),
+    path('connect/', connect_neon),
+]

@@ -1,18 +1,20 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/tokens", tags=["tokens"])
+from django.urls import path
 
 
-@router.get("/")
-def list_tokens():
+def list_tokens(request):
     return []
 
 
-@router.post("/")
-def create_token():
+def create_token(request):
     return {"id": 1}
 
 
-@router.delete("/{token_id}")
-def delete_token(token_id: int):
+def delete_token(request, token_id):
     return {"deleted": token_id}
+
+
+urlpatterns = [
+    path('', list_tokens),
+    path('create/', create_token),
+    path('<int:token_id>/delete/', delete_token),
+]

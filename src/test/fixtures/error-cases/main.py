@@ -1,14 +1,15 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
-from .other import router
-from .nonexistent import missing_router
-
-app = FastAPI()
-
-app.include_router(router)
-app.include_router(missing_router)
+from .other import urlpatterns as other_urls
+from .nonexistent import missing_urls
 
 
-@app.get("/")
-def root():
+def root(request):
     return {"ok": True}
+
+
+urlpatterns = [
+    path('', root),
+    path('other/', include(other_urls)),
+    path('missing/', include(missing_urls)),
+]

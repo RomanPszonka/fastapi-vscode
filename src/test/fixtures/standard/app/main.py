@@ -1,18 +1,19 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
 from .routes import items, users
 
-app = FastAPI(title="Standard Package Layout")
 
-app.include_router(users.router, tags=["user-management"])
-app.include_router(items.router)
-
-
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello from standard package layout"}
 
 
-@app.get("/health")
-def health():
+def health(request):
     return {"status": "ok"}
+
+
+urlpatterns = [
+    path('', root),
+    path('health/', health),
+    path('users/', include(users.urlpatterns)),
+    path('items/', include(items.urlpatterns)),
+]

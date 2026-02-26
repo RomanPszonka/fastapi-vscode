@@ -1,13 +1,15 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/{app_id}/settings", tags=["settings"])
+from django.urls import path
 
 
-@router.get("/")
-def get_settings(app_id: int):
+def get_settings(request, app_id):
     return {}
 
 
-@router.put("/")
-def update_settings(app_id: int):
+def update_settings(request, app_id):
     return {}
+
+
+urlpatterns = [
+    path('', get_settings),
+    path('', update_settings),
+]

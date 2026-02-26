@@ -1,13 +1,13 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
-from app.main import app as sub_app
-
-app = FastAPI(title="Root App")
+from app.main import urlpatterns as app_urls
 
 
-@app.get("/health")
-def health_check():
+def health_check(request):
     return {"status": "ok"}
 
 
-app.mount("/v1", sub_app)
+urlpatterns = [
+    path('health/', health_check),
+    path('v1/', include(app_urls)),
+]

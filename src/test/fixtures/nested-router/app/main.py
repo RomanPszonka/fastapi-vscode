@@ -1,13 +1,13 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
 from .routes import apps
 
-app = FastAPI(title="Nested Router Test")
 
-# Use dotted reference like real codebase: apps.router
-app.include_router(apps.router, prefix="/api")
-
-
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello"}
+
+
+urlpatterns = [
+    path('', root),
+    path('api/apps/', include(apps.urlpatterns)),
+]

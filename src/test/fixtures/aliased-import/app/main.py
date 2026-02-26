@@ -1,12 +1,13 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
-from .routes.tokens import router as tokens_router
-
-app = FastAPI(title="Aliased Import Test")
-
-app.include_router(tokens_router)
+from .routes.tokens import urlpatterns as tokens_urls
 
 
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello"}
+
+
+urlpatterns = [
+    path('', root),
+    path('tokens/', include(tokens_urls)),
+]

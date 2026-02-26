@@ -1,12 +1,13 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
-from routes import router
-
-app = FastAPI(title="Flat Layout")
-
-app.include_router(router)
+from routes import urlpatterns as route_urls
 
 
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello from flat layout"}
+
+
+urlpatterns = [
+    path('', root),
+    path('api/', include('routes')),
+]
