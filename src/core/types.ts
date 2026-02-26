@@ -1,5 +1,5 @@
 /**
- * Public API types for FastAPI path operation discovery.
+ * Public API types for Django path operation discovery.
  */
 
 export type HTTPMethod =

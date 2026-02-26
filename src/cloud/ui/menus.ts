@@ -16,7 +16,7 @@ export interface MenuActions {
 }
 
 /**
- * MenuHandler shows interactive menus for FastAPI Cloud actions in the status bar.
+ * MenuHandler shows interactive menus for Django Cloud actions in the status bar.
  * It adapts the menu options based on the current workspace state.
  */
 export class MenuHandler {
@@ -69,7 +69,7 @@ export class MenuHandler {
     const items = [
       {
         label: "$(rocket) Deploy App",
-        description: "Deploy your FastAPI app",
+        description: "Deploy your Django app",
         id: "deploy",
       },
       {
@@ -123,12 +123,12 @@ export class MenuHandler {
     const items = [
       {
         label: "$(trash) Unlink Project",
-        description: "Disconnect from FastAPI Cloud app",
+        description: "Disconnect from Django Cloud app",
         id: "unlink",
       },
       {
         label: "$(sign-out) Sign Out",
-        description: "Sign out of FastAPI Cloud",
+        description: "Sign out of Django Cloud",
         id: "signout",
       },
     ]

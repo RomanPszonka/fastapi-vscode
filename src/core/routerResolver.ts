@@ -8,9 +8,9 @@ import type { Parser } from "./parser"
 export type { RouterNode }
 
 /**
- * Finds the main FastAPI app or APIRouter in the list of routers.
+ * Finds the main Django app or URLConf in the list of routers.
  * If targetVariable is specified, only returns the router with that variable name.
- * Otherwise, prioritizes FastAPI apps over APIRouters.
+ * Otherwise, prioritizes Django apps over URLConfs.
  */
 function findAppRouter(
   routers: RouterInfo[],
@@ -88,10 +88,10 @@ async function buildRouterGraphInternal(
     `Analyzed "${resolvedEntryUri}": ${analysis.routes.length} routes, ${analysis.routers.length} routers, ${analysis.includeRouters.length} include_router calls`,
   )
 
-  // Find FastAPI instantiation (filter by targetVariable if specified)
+  // Find Django urlpatterns (filter by targetVariable if specified)
   let appRouter = findAppRouter(analysis.routers, targetVariable)
 
-  // If no FastAPI/APIRouter found and this is an __init__.py, check for re-exports
+  // If no Django URLconf found and this is an __init__.py, check for re-exports
   if (!appRouter && entryFileUri.endsWith("__init__.py")) {
     const actualRouterUri = await resolveRouterFromInit(
       entryFileUri,
@@ -118,7 +118,7 @@ async function buildRouterGraphInternal(
   }
 
   // Find all routers included in the app
-  // Only include routes that belong directly to the app (not to local APIRouters)
+  // Only include routes that belong directly to the app (not to local URL confs)
   const appRoutes = analysis.routes.filter(
     (r) => r.owner === appRouter.variableName,
   )

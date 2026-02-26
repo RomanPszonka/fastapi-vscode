@@ -11,12 +11,12 @@ import type {
   User,
 } from "./types"
 
-export const BASE_URL = "https://api.fastapicloud.com/api/v1"
-export const DASHBOARD_URL = "https://dashboard.fastapicloud.com"
+export const BASE_URL = "https://api.djangocloud.com/api/v1"
+export const DASHBOARD_URL = "https://dashboard.djangocloud.com"
 
 function getUserAgentHeaders(): Record<string, string> {
   if (vscode.env.uiKind === vscode.UIKind.Web) return {}
-  return { "User-Agent": `fastapi-vscode/${getExtensionVersion()}` }
+  return { "User-Agent": `django-vscode/${getExtensionVersion()}` }
 }
 
 export interface AppLogEntry {

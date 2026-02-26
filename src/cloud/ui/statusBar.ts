@@ -4,10 +4,10 @@ import { AUTH_PROVIDER_ID } from "../auth"
 import type { WorkspaceState } from "../types"
 
 const STATUS_BAR_UPDATE_DEBOUNCE_MS = 100
-const STATUS_DEFAULT = "$(cloud) FastAPI Cloud"
-const STATUS_SIGN_IN = "$(cloud) Sign into FastAPI Cloud"
-const STATUS_DEPLOY = "$(rocket) Deploy to FastAPI Cloud"
-const STATUS_WARNING = "$(warning) FastAPI Cloud"
+const STATUS_DEFAULT = "$(cloud) Django Cloud"
+const STATUS_SIGN_IN = "$(cloud) Sign into Django Cloud"
+const STATUS_DEPLOY = "$(rocket) Deploy to Django Cloud"
+const STATUS_WARNING = "$(warning) Django Cloud"
 
 export class StatusBarManager {
   private activeEditorListener?: vscode.Disposable

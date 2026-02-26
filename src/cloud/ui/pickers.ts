@@ -49,7 +49,7 @@ export async function pickTeam(apiService: ApiService): Promise<Team | null> {
   } catch (error) {
     const message =
       error instanceof Error && error.message === "Not authenticated"
-        ? "Please sign in to FastAPI Cloud first."
+        ? "Please sign in to Django Cloud first."
         : "Failed to fetch teams. Please check your connection."
     ui.showErrorMessage(message)
     return null
@@ -57,7 +57,7 @@ export async function pickTeam(apiService: ApiService): Promise<Team | null> {
 
   if (teams.length === 0) {
     ui.showErrorMessage(
-      "No teams found. Please create a team on FastAPI Cloud first.",
+      "No teams found. Please create a team on Django Cloud first.",
     )
     return null
   }
@@ -91,7 +91,7 @@ export async function pickExistingApp(
 
   if (apps.length === 0) {
     ui.showErrorMessage(
-      "No apps found for this team. Please create an app on FastAPI Cloud first.",
+      "No apps found for this team. Please create an app on Django Cloud first.",
     )
     return null
   }

@@ -17,12 +17,12 @@ import {
 import { trackCloudSignIn } from "../utils/telemetry"
 import { ApiService } from "./api"
 
-export const AUTH_PROVIDER_ID = "fastapi-vscode"
-export const NAME = "FastAPI Cloud"
+export const AUTH_PROVIDER_ID = "django-vscode"
+export const NAME = "Django Cloud"
 const AUTH_POLL_INTERVAL_MS = 3000
-const SECRET_STORAGE_KEY = "fastapi-cloud-access-token"
-export const SESSION_ID = "fastapi-cloud-session"
-export const ACCOUNT_ID = "fastapi-cloud-account"
+const SECRET_STORAGE_KEY = "django-cloud-access-token"
+export const SESSION_ID = "django-cloud-session"
+export const ACCOUNT_ID = "django-cloud-account"
 
 interface AuthConfig {
   access_token: string
@@ -104,13 +104,13 @@ export class CloudAuthenticationProvider
     let authPath: string
 
     if (platform === "darwin") {
-      authPath = `${home}/Library/Application Support/fastapi-cli/auth.json`
+      authPath = `${home}/Library/Application Support/django-cli/auth.json`
     } else if (platform === "win32") {
       const appData = process.env.APPDATA || `${home}/AppData/Roaming`
-      authPath = `${appData}/fastapi-cli/auth.json`
+      authPath = `${appData}/django-cli/auth.json`
     } else {
       const xdgData = process.env.XDG_DATA_HOME || `${home}/.local/share`
-      authPath = `${xdgData}/fastapi-cli/auth.json`
+      authPath = `${xdgData}/django-cli/auth.json`
     }
 
     return Uri.file(authPath)
@@ -184,7 +184,7 @@ export class CloudAuthenticationProvider
 
     const authUri = this.getAuthUri()
     if (!authUri) return
-    // Otherwise, save to filesystem so that we can share with fastapi-cloud-cli
+    // Otherwise, save to filesystem so that we can share with django-cloud-cli
     const parentUri = Uri.joinPath(authUri, "..")
     await workspace.fs.createDirectory(parentUri)
     await workspace.fs.writeFile(
@@ -212,7 +212,7 @@ export class CloudAuthenticationProvider
           error.message === "fetch failed")
       ) {
         throw new Error(
-          "Unable to connect to FastAPI Cloud. Please check your network connection and try again.",
+          "Unable to connect to Django Cloud. Please check your network connection and try again.",
         )
       }
       throw error
@@ -227,7 +227,7 @@ export class CloudAuthenticationProvider
     const token = await window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: "Signing in to FastAPI Cloud...",
+        title: "Signing in to Django Cloud...",
         cancellable: true,
       },
       async (_progress, cancellationToken) => {
@@ -249,7 +249,7 @@ export class CloudAuthenticationProvider
     const session = sessions[0]
 
     window.showInformationMessage(
-      `Signed in to FastAPI Cloud as ${session.account.label}`,
+      `Signed in to Django Cloud as ${session.account.label}`,
     )
 
     this._onDidChangeSessions.fire({

@@ -2,21 +2,21 @@ import * as vscode from "vscode"
 import { log } from "../utils/logger"
 import type { Config } from "./types"
 
-// README content aligned with fastapi-cloud-cli
-const README_CONTENT = `> Why do I have a folder named ".fastapicloud" in my project? 🤔
-The ".fastapicloud" folder is created when you link a directory to a FastAPI Cloud project.
+// README content aligned with django-cloud-cli
+const README_CONTENT = `> Why do I have a folder named ".djangocloud" in my project? 🤔
+The ".djangocloud" folder is created when you link a directory to a Django Cloud project.
 
 > What does the "cloud.json" file contain?
 The "cloud.json" file contains:
-- The ID of the FastAPI app that you linked ("app_id")
-- The ID of the team your FastAPI Cloud project is owned by ("team_id")
+- The ID of the Django app that you linked ("app_id")
+- The ID of the team your Django Cloud project is owned by ("team_id")
 
-> Should I commit the ".fastapicloud" folder?
-No, you should not commit the ".fastapicloud" folder to your version control system.
+> Should I commit the ".djangocloud" folder?
+No, you should not commit the ".djangocloud" folder to your version control system.
 That's why there's a ".gitignore" file in this folder.
 `
 
-const CONFIG_DIR = ".fastapicloud"
+const CONFIG_DIR = ".djangocloud"
 const CONFIG_FILE = "cloud.json"
 
 export class ConfigService {

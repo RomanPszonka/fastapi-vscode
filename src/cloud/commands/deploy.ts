@@ -19,7 +19,7 @@ import {
 import { ui } from "../ui/dialogs"
 import { createNewApp, pickExistingApp, pickTeam } from "../ui/pickers"
 
-// Exclusion patterns - aligned with fastapi-cloud-cli
+// Exclusion patterns - aligned with django-cloud-cli
 // See: https://github.com/fastapilabs/fastapi-cloud-cli/blob/main/src/fastapi_cloud_cli/commands/deploy.py
 const EXCLUDE_PARTS = [
   ".venv",
@@ -28,7 +28,7 @@ const EXCLUDE_PARTS = [
   ".pytest_cache",
   ".git",
   ".gitignore",
-  ".fastapicloudignore",
+  ".djangocloudignore",
 ]
 
 // 300 attempts x 2 seconds = 10 minutes maximum
@@ -78,11 +78,11 @@ export async function deploy(context: DeployContext): Promise<boolean> {
   })
   if (!session) {
     const result = await ui.showErrorMessage(
-      "Please sign in to FastAPI Cloud first.",
+      "Please sign in to Django Cloud first.",
       "Sign In",
     )
     if (result === "Sign In") {
-      vscode.commands.executeCommand("fastapi-vscode.signIn")
+      vscode.commands.executeCommand("django-vscode.signIn")
     }
     return false
   }
@@ -102,11 +102,11 @@ export async function deploy(context: DeployContext): Promise<boolean> {
         },
         {
           label: "$(link) Link Existing App",
-          description: "Connect to an app already on FastAPI Cloud",
+          description: "Connect to an app already on Django Cloud",
           id: "link",
         },
       ],
-      { placeHolder: "Set up FastAPI Cloud" },
+      { placeHolder: "Set up Django Cloud" },
     )
     if (!choice) return false
 

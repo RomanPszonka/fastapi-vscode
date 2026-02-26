@@ -11,12 +11,12 @@ const FLUSH_INTERVAL_MS = 30000
 
 /** Python packages to track versions for */
 export const TRACKED_PACKAGES = [
-  "fastapi",
-  "fastapi-cli",
-  "fastapi-cloud-cli",
-  "typer",
-  "starlette",
-  "pydantic",
+  "django",
+  "djangorestframework",
+  "django-filter",
+  "django-cors-headers",
+  "django-extensions",
+  "celery",
 ] as const
 
 export class TelemetryClient {
@@ -53,7 +53,7 @@ export class TelemetryClient {
     })
 
     // Identify user with static properties available at init time.
-    // Python/FastAPI versions are added later via setVersions() and included in events,
+    // Python/Django versions are added later via setVersions() and included in events,
     // since they require async detection and can change during the session.
     this.posthog.identify({
       distinctId: this.userId,

@@ -1,5 +1,5 @@
 /**
- * CloudController manages the state and interactions of FastAPI Cloud status bar,
+ * CloudController manages the state and interactions of Django Cloud status bar,
  * including authentication, project linking, and deployment.
  */
 import * as vscode from "vscode"
@@ -199,7 +199,7 @@ export class CloudController {
           if (shouldShowWarning) {
             vscode.window
               .showWarningMessage(
-                "This project is linked to a FastAPI Cloud app that could not be found. Unlink it, then link to the correct app.",
+                "This project is linked to a Django Cloud app that could not be found. Unlink it, then link to the correct app.",
                 "Unlink",
               )
               .then((selected) => {

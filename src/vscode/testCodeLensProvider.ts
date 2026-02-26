@@ -1,5 +1,5 @@
 /**
- * CodeLens provider for FastAPI test client HTTP calls.
+ * CodeLens provider for Django test client HTTP calls.
  * Shows "Go to route" links above test client method calls.
  */
 
@@ -83,7 +83,7 @@ export class TestCodeLensProvider implements CodeLensProvider {
         codeLenses.push(
           new CodeLens(range, {
             title: `Go to route: ${methodUpper} ${displayPath}`,
-            command: "fastapi-vscode.goToDefinition",
+            command: "django-vscode.goToDefinition",
             arguments: [
               locations,
               document.uri,

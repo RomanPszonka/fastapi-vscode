@@ -16,7 +16,7 @@ const SINCE_OPTIONS = [
   { label: "1 day", value: "1d" },
 ]
 
-// Roughly matches fastapi-cloud-cli LOG_LEVEL_COLORS
+// Roughly matches django-cloud-cli LOG_LEVEL_COLORS
 const LEVEL_COLORS: Record<string, string> = {
   debug: "#4488ff",
   info: "#00cccc",

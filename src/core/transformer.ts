@@ -213,7 +213,7 @@ export function routerNodeToAppDefinition(
 ): AppDefinition {
   const flatRouters: RouterDefinition[] = []
 
-  // Collect direct routes on the FastAPI app
+  // Collect direct routes on the Django app
   const directRoutes = rootNode.routes.map((r) =>
     toRouteDefinition(r, rootNode.prefix, rootNode.filePath),
   )

@@ -8,7 +8,7 @@ import { getExtensionVersion } from "../../extension"
 import { client } from "./client"
 import type { ClientInfo } from "./types"
 
-const USER_ID_KEY = "fastapi.telemetry.userId"
+const USER_ID_KEY = "django.telemetry.userId"
 
 export function getClientInfo(): ClientInfo {
   const appName = vscode.env.appName
@@ -49,7 +49,7 @@ export function getClientInfo(): ClientInfo {
 /** Check if telemetry is enabled based on both VS Code and extension settings. */
 export function isTelemetryEnabled(): boolean {
   const vscodeTelemetryEnabled = vscode.env.isTelemetryEnabled
-  const config = vscode.workspace.getConfiguration("fastapi")
+  const config = vscode.workspace.getConfiguration("django")
   const extensionTelemetryEnabled = config.get<boolean>(
     "telemetry.enabled",
     true,
@@ -138,7 +138,7 @@ async function fetchPackageVersions(
 /**
  * Get actual Python and package versions installed in the current workspace.
  * This requires the Python extension to be installed and activated.
- * @returns An object with python_version and package versions (e.g., fastapi_version, pydantic_version).
+ * @returns An object with python_version and package versions (e.g., django_version, djangorestframework_version).
  */
 export async function getInstalledVersions(
   packages: readonly string[] = [],

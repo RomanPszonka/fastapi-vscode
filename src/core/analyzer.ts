@@ -27,7 +27,7 @@ function resolveVariables(
   variables: Map<string, string>,
 ): string {
   // Match sentinel-wrapped names produced by extractPathFromNode for identifiers.
-  // Using \uE000 (Unicode private use) as sentinel ensures FastAPI path parameters
+  // Using \uE000 (Unicode private use) as sentinel ensures Django path parameters
   // like {id} are never substituted — only actual identifier references are resolved.
   return path.replace(
     /\uE000([^\uE000]+)\uE000/g,
