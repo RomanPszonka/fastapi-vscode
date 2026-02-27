@@ -1,28 +1,25 @@
-from fastapi import APIRouter, FastAPI
-
-app = FastAPI(title="Same File Layout")
-
-router = APIRouter(prefix="/api")
+from django.urls import path
 
 
-@router.get("/items")
-def get_items():
+def get_items(request):
     return {"items": []}
 
 
-@router.post("/items")
-def create_item():
+def create_item(request):
     return {"item": "created"}
 
 
-app.include_router(router)
-
-
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello from same file layout"}
 
 
-@app.get("/health")
-def health():
+def health(request):
     return {"status": "ok"}
+
+
+urlpatterns = [
+    path('api/items/', get_items),
+    path('api/items/', create_item),
+    path('', root),
+    path('health/', health),
+]

@@ -1,14 +1,16 @@
 # Note: namespace_routes has NO __init__.py (namespace package)
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/users", tags=["users"])
+from django.urls import path
 
 
-@router.get("/")
-def list_users():
+def list_users(request):
     return [{"id": 1, "name": "Alice"}]
 
 
-@router.get("/{user_id}")
-def get_user(user_id: int):
+def get_user(request, user_id):
     return {"id": user_id, "name": "Alice"}
+
+
+urlpatterns = [
+    path('', list_users),
+    path('<int:user_id>/', get_user),
+]

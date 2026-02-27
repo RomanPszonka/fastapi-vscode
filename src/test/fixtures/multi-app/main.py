@@ -1,30 +1,35 @@
-from fastapi import FastAPI
+from django.urls import path
 
-# Multiple FastAPI apps in the same file
-public_app = FastAPI(title="Public API")
-admin_app = FastAPI(title="Admin API")
+# Multiple URL configurations in the same file
 
 
-@public_app.get("/")
-def public_root():
+def public_root(request):
     return {"message": "Public API"}
 
 
-@public_app.get("/products")
-def list_products():
+def list_products(request):
     return {"products": []}
 
 
-@admin_app.get("/")
-def admin_root():
+def admin_root(request):
     return {"message": "Admin API"}
 
 
-@admin_app.get("/users")
-def list_users():
+def list_users(request):
     return {"users": []}
 
 
-@admin_app.delete("/users/{user_id}")
-def delete_user(user_id: int):
+def delete_user(request, user_id):
     return {"deleted": user_id}
+
+
+public_urlpatterns = [
+    path('', public_root),
+    path('products/', list_products),
+]
+
+admin_urlpatterns = [
+    path('', admin_root),
+    path('users/', list_users),
+    path('users/<int:user_id>/delete/', delete_user),
+]

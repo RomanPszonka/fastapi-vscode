@@ -1,6 +1,6 @@
 /**
- * FastAPI app discovery logic.
- * Handles finding FastAPI apps via pyproject.toml, VS Code settings, or automatic detection.
+ * Django app discovery logic.
+ * Handles finding Django apps via pyproject.toml, VS Code settings, or automatic detection.
  */
 
 import * as toml from "toml"
@@ -10,10 +10,9 @@ import type { Parser } from "./core/parser"
 import { findProjectRoot, uriPath } from "./core/pathUtils"
 import { buildRouterGraph } from "./core/routerResolver"
 import { routerNodeToAppDefinition } from "./core/transformer"
-import { collectRoutes, countRouters } from "./core/treeUtils"
+import { collectRoutes } from "./core/treeUtils"
 import type { AppDefinition } from "./core/types"
 import { log } from "./utils/logger"
-import { createTimer, trackEntrypointDetected } from "./utils/telemetry"
 import { vscodeFileSystem } from "./vscode/vscodeFileSystem"
 
 export type { EntryPoint }
@@ -38,11 +37,11 @@ export function parseEntrypointString(value: string): {
 }
 
 /**
- * Finds all Python files containing a FastAPI() instantiation.
+ * Finds all Python files containing urlpatterns.
  * Uses a cheap text pre-filter to avoid tree-sitter parsing non-app files.
  * Returns URI strings sorted by depth (shallower first).
  */
-async function findAllFastAPIFiles(
+async function findAllDjangoFiles(
   folder: vscode.WorkspaceFolder,
 ): Promise<string[]> {
   const pyFiles = await vscode.workspace.findFiles(
@@ -63,7 +62,7 @@ async function findAllFastAPIFiles(
     )
       continue
     const content = await vscode.workspace.fs.readFile(uri)
-    if (new TextDecoder().decode(content).includes("FastAPI(")) {
+    if (new TextDecoder().decode(content).includes("urlpatterns")) {
       results.push(uri.toString())
     }
   }
@@ -91,7 +90,7 @@ async function parsePyprojectForEntryPoint(
     const contents = toml.parse(document.getText()) as Record<string, unknown>
 
     const entrypoint = (contents.tool as Record<string, unknown> | undefined)
-      ?.fastapi as Record<string, unknown> | undefined
+      ?.django as Record<string, unknown> | undefined
     const entrypointValue = entrypoint?.entrypoint as string | undefined
 
     if (!entrypointValue) {
@@ -112,10 +111,10 @@ async function parsePyprojectForEntryPoint(
 }
 
 /**
- * Discovers FastAPI apps in the workspace.
+ * Discovers Django apps in the workspace.
  * Priority: VS Code settings > pyproject.toml > automatic detection
  */
-export async function discoverFastAPIApps(
+export async function discoverDjangoApps(
   parser: Parser,
 ): Promise<AppDefinition[]> {
   const workspaceFolders = vscode.workspace.workspaceFolders
@@ -125,16 +124,14 @@ export async function discoverFastAPIApps(
   }
 
   log(
-    `Discovering FastAPI apps in ${workspaceFolders.length} workspace folder(s)...`,
+    `Discovering Django apps in ${workspaceFolders.length} workspace folder(s)...`,
   )
 
   const apps: AppDefinition[] = []
 
   for (const folder of workspaceFolders) {
-    const folderTimer = createTimer()
-    let detectionMethod: "config" | "pyproject" | "heuristic" = "heuristic"
     const folderApps: AppDefinition[] = []
-    const config = vscode.workspace.getConfiguration("fastapi", folder.uri)
+    const config = vscode.workspace.getConfiguration("django", folder.uri)
     const customEntryPoint = config.get<string>("entryPoint")
 
     let candidates: EntryPoint[]
@@ -148,26 +145,23 @@ export async function discoverFastAPIApps(
       if (!(await vscodeFileSystem.exists(entryUri.toString()))) {
         log(`Custom entry point not found: ${customEntryPoint}`)
         vscode.window.showWarningMessage(
-          `FastAPI entry point not found: ${customEntryPoint}`,
+          `Django entry point not found: ${customEntryPoint}`,
         )
         continue
       }
 
       log(`Using custom entry point: ${customEntryPoint}`)
       candidates = [{ filePath: entryUri.toString(), variableName }]
-      detectionMethod = "config"
     } else {
       // Otherwise, check pyproject.toml or auto-detect
       const pyprojectEntry = await parsePyprojectForEntryPoint(folder.uri)
       if (pyprojectEntry) {
         candidates = [pyprojectEntry]
-        detectionMethod = "pyproject"
       } else {
-        const detected = await findAllFastAPIFiles(folder)
+        const detected = await findAllDjangoFiles(folder)
         candidates = detected.map((filePath) => ({ filePath }))
-        detectionMethod = "heuristic"
         log(
-          `Found ${candidates.length} candidate FastAPI file(s) in ${folder.name}`,
+          `Found ${candidates.length} candidate Django file(s) in ${folder.name}`,
         )
       }
 
@@ -205,22 +199,13 @@ export async function discoverFastAPIApps(
 
     if (folderApps.length > 0) {
       log(
-        `Found ${folderApps.length} FastAPI app(s) with ${folderRoutes.length} route(s) in ${folder.name}`,
+        `Found ${folderApps.length} Django app(s) with ${folderRoutes.length} route(s) in ${folder.name}`,
       )
     }
-
-    // Track entrypoint detection per workspace folder
-    trackEntrypointDetected({
-      duration_ms: folderTimer(),
-      method: detectionMethod,
-      success: folderApps.length > 0,
-      routes_count: folderRoutes.length,
-      routers_count: countRouters(folderApps),
-    })
   }
 
   if (apps.length === 0) {
-    log("No FastAPI apps found in workspace")
+    log("No Django apps found in workspace")
   }
 
   return apps

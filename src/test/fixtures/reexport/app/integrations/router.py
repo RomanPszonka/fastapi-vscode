@@ -1,23 +1,24 @@
-from fastapi import APIRouter
+from django.urls import path, include
 
-from .neon import router as neon_router
-
-router = APIRouter(prefix="/integrations", tags=["integrations"])
-
-# Nested router
-router.include_router(neon_router)
+from .neon import urlpatterns as neon_urls
 
 
-@router.get("/github")
-def github_integration():
+def github_integration(request):
     return {"provider": "github", "status": "connected"}
 
 
-@router.get("/slack")
-def slack_integration():
+def slack_integration(request):
     return {"provider": "slack", "status": "connected"}
 
 
-@router.post("/webhook")
-def webhook():
+def webhook(request):
     return {"received": True}
+
+
+# Nested URL include
+urlpatterns = [
+    path('neon/', include(neon_urls)),
+    path('github/', github_integration),
+    path('slack/', slack_integration),
+    path('webhook/', webhook),
+]

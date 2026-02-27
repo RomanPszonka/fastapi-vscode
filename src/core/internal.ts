@@ -38,7 +38,7 @@ export interface RouteInfo {
   docstring?: string
 }
 
-export type RouterType = "APIRouter" | "FastAPI" | "Unknown"
+export type RouterType = "URLConf" | "Django" | "Unknown"
 
 export interface RouterInfo {
   variableName: string
@@ -63,7 +63,7 @@ export interface ImportInfo {
 }
 
 export interface IncludeRouterInfo {
-  // The app or router with the include_router call
+  // The app or router with the include() call
   owner: string
   router: string
   prefix: string

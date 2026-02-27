@@ -1,14 +1,14 @@
-# FastAPI extension for Visual Studio Code
+# Django extension for Visual Studio Code
 
-A Visual Studio Code extension for FastAPI application development. Available on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=FastAPILabs.fastapi-vscode).
+A Visual Studio Code extension for Django application development.
 
 ## Overview
 
-This extension enhances the FastAPI development experience in Visual Studio Code by providing:
+This extension enhances the Django development experience in Visual Studio Code by providing:
 
 ### Path Operation Explorer
 
-The Path Operation Explorer provides a hierarchical tree view of all FastAPI routes in your application. You can expand routers to see their associated path operations, and click on any route to jump directly to its definition in the code. You can also jump to router definitions by right-clicking on a router node.
+The Path Operation Explorer provides a hierarchical tree view of all Django URL patterns in your application. You can expand URL confs to see their associated path operations, and click on any route to jump directly to its definition in the code. You can also jump to URL conf definitions by right-clicking on a URL conf node.
 
 ![Path Operation Explorer GIF](media/walkthrough/path-operations.gif)
 
@@ -24,33 +24,15 @@ CodeLens links appear above HTTP client calls like `client.get('/items')`, letti
 
 ![CodeLens GIF](media/walkthrough/codelens.gif)
 
-### Deploy to FastAPI Cloud
-
-Deploy your application directly to [FastAPI Cloud](https://fastapicloud.com/) from the status bar with zero config or frustration.
-
-![Deploy GIF](media/walkthrough/deploy.gif)
-
-### View FastAPI Cloud application logs
-
-View real-time logs from your FastAPI Cloud deployed applications directly within VS Code, with support for filtering by log level and text search.
-
-![Logs GIF](media/walkthrough/logs.gif)
-
 ## Settings and customization
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `fastapi.entryPoint` | Entry point for the main FastAPI application in module notation (e.g., `my_app.main:app`). If not set, the extension searches `pyproject.toml` and common locations. | `""` (auto-detect) |
-| `fastapi.codeLens.enabled` | Show CodeLens links above test client calls (e.g., `client.get('/items')`) to navigate to the corresponding route definition. | `true` |
-| `fastapi.cloud.enabled` | Enable FastAPI Cloud integration (status bar, deploy commands). | `true` |
-| `fastapi.telemetry.enabled` | Send anonymous usage data to help improve the extension. See [TELEMETRY.md](TELEMETRY.md) for details on what is collected. | `true` |
+| `django.entryPoint` | Entrypoint for the root Django URLconf in module:variable notation (e.g., `myproject.urls:urlpatterns`). If not set, the extension searches `pyproject.toml` and common locations. | `""` (auto-detect) |
+| `django.codeLens.enabled` | Show CodeLens links above test client calls (e.g., `client.get('/items')`) to navigate to the corresponding route definition. | `true` |
 
-The extension automatically discovers your FastAPI app by scanning for files that instantiate `FastAPI()`. If auto-detection doesn't work for your project structure, you can specify an entrypoint via `[tool.fastapi]` in `pyproject.toml` or the `fastapi.entryPoint` VS Code setting.
+The extension automatically discovers your Django app by scanning for files that contain `urlpatterns`. If auto-detection doesn't work for your project structure, you can specify an entrypoint via `[tool.django]` in `pyproject.toml` or the `django.entryPoint` VS Code setting.
 
-## Data and telemetry
+## License
 
-The FastAPI extension collects anonymous usage data and sends it to FastAPI to help improve the extension. You can disable telemetry by setting `fastapi.telemetry.enabled` to `false`. Read our [TELEMETRY.md](TELEMETRY.md) for details on what we collect and what we don't.
-
-## License 
 MIT
-

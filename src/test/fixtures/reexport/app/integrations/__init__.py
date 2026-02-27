@@ -1,2 +1,2 @@
-# Re-export the router from the actual implementation file
-from .router import router as router
+# Re-export the urlpatterns from the actual implementation file
+from .router import urlpatterns as urlpatterns

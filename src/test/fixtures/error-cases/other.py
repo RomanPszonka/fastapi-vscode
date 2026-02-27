@@ -1,10 +1,12 @@
-from fastapi import APIRouter
+from django.urls import path
 
-from .main import app  # circular import back to main
-
-router = APIRouter(prefix="/other")
+from .main import urlpatterns as main_urls  # circular import back to main
 
 
-@router.get("/")
-def other():
+def other(request):
     return {"other": True}
+
+
+urlpatterns = [
+    path('', other),
+]

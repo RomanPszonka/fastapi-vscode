@@ -1,21 +1,21 @@
-from fastapi import APIRouter
+from django.urls import path, include
 
-from .tokens import router as tokens_router
-from .settings import router as settings_router
-
-router = APIRouter(prefix="/apps", tags=["apps"])
+from .tokens import urlpatterns as tokens_urls
+from .settings import urlpatterns as settings_urls
 
 
-@router.get("/")
-def list_apps():
+def list_apps(request):
     return []
 
 
-@router.get("/{app_id}")
-def get_app(app_id: int):
+def get_app(request, app_id):
     return {"id": app_id}
 
 
-# Nested routers - apps router includes tokens and settings routers
-router.include_router(tokens_router, tags=["tokens"])
-router.include_router(settings_router)
+# Nested URL includes - apps includes tokens and settings
+urlpatterns = [
+    path('', list_apps),
+    path('<int:app_id>/', get_app),
+    path('<int:app_id>/tokens/', include(tokens_urls)),
+    path('<int:app_id>/settings/', include(settings_urls)),
+]

@@ -1,13 +1,15 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/api", tags=["api"])
+from django.urls import path
 
 
-@router.get("/users")
-def list_users():
+def list_users(request):
     return [{"id": 1, "name": "Alice"}]
 
 
-@router.get("/items")
-def list_items():
+def list_items(request):
     return [{"id": 1, "name": "Widget"}]
+
+
+urlpatterns = [
+    path('users/', list_users),
+    path('items/', list_items),
+]

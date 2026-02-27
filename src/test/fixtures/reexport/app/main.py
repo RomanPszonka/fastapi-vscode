@@ -1,13 +1,14 @@
-from fastapi import FastAPI
+from django.urls import path, include
 
-# Import router that is re-exported from __init__.py
-from .integrations import router
-
-app = FastAPI(title="Re-export Layout")
-
-app.include_router(router)
+# Import urlpatterns that are re-exported from __init__.py
+from .integrations import urlpatterns as integration_urls
 
 
-@app.get("/")
-def root():
+def root(request):
     return {"message": "Hello from re-export layout"}
+
+
+urlpatterns = [
+    path('', root),
+    path('integrations/', include(integration_urls)),
+]

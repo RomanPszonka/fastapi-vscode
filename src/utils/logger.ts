@@ -1,5 +1,5 @@
 /**
- * Output channel logger for the FastAPI extension.
+ * Output channel logger for the Django extension.
  * Provides visibility into extension activity for troubleshooting.
  *
  * Uses LogOutputChannel for colored log levels and automatic timestamps.
@@ -11,7 +11,7 @@ let outputChannel: vscode.LogOutputChannel | null = null
 
 function getOutputChannel(): vscode.LogOutputChannel {
   if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel("FastAPI", { log: true })
+    outputChannel = vscode.window.createOutputChannel("Django", { log: true })
   }
   return outputChannel
 }

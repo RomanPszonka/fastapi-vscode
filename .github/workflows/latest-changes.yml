@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           # To allow latest-changes to commit to the main branch
-          token: ${{ secrets.FASTAPI_VSCODE_LATEST_CHANGES }}
+          token: ${{ secrets.DJANGO_VSCODE_LATEST_CHANGES }}
       - uses: tiangolo/latest-changes@c9d329cb147f0ddf4fb631214e3f838ff17ccbbd # 0.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

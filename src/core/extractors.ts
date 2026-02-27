@@ -1,5 +1,5 @@
 /**
- * Utility functions to extract FastAPI-related information from AST nodes.
+ * Utility functions to extract Django-related information from AST nodes.
  */
 
 import type { Node } from "web-tree-sitter"
@@ -12,7 +12,6 @@ import type {
   RouterInfo,
   RouterType,
 } from "./internal"
-import { ROUTE_METHODS } from "./internal"
 
 /** Recursively finds all nodes of a given type within a subtree */
 export function findNodesByType(node: Node, type: string): Node[] {
@@ -21,7 +20,7 @@ export function findNodesByType(node: Node, type: string): Node[] {
   return results
 }
 
-function stripDocstring(raw: string): string {
+export function stripDocstring(raw: string): string {
   let content: string
   if (
     (raw.startsWith('"""') && raw.endsWith('"""')) ||
@@ -145,92 +144,30 @@ export function extractPathFromNode(node: Node): string {
     default:
       // Dynamic values: variable, attribute access, or function call.
       // Use \uE000 (Unicode private use) as sentinel so resolveVariables can
-      // distinguish these from FastAPI path parameters like {id}.
+      // distinguish these from Django path parameters like <int:id>.
       return `\uE000${node.text}\uE000`
   }
 }
 
 /**
- * Extracts from route decorators like @app.get("/path"), @router.post("/path"), etc.
+ * Django uses urlpatterns for routing, not decorators.
+ * DRF @api_view decorators are not used for route definition.
+ * Kept for backward compatibility with the analyzer pipeline.
  */
-export function decoratorExtractor(node: Node): RouteInfo | null {
-  if (node.type !== "decorated_definition") {
-    return null
+export function decoratorExtractor(_node: Node): RouteInfo | null {
+  return null
+}
+
+/** Ensures a Django path starts with / for consistency */
+function ensureLeadingSlash(path: string): string {
+  if (path && !path.startsWith("/")) {
+    return `/${path}`
   }
-
-  // Grammar guarantees: decorated_definition always has a first child (the decorator)
-  const decoratorNode = node.firstNamedChild!
-
-  const callNode = findNodesByType(decoratorNode, "call")[0]
-  const functionNode = callNode?.childForFieldName("function")
-  const argumentsNode = callNode?.childForFieldName("arguments")
-  const objectNode = functionNode?.childForFieldName("object")
-  const methodNode = functionNode?.childForFieldName("attribute")
-
-  if (!objectNode || !methodNode || !argumentsNode) {
-    return null
-  }
-
-  // Filter out non-route decorators (exception_handler, middleware, on_event)
-  const method = methodNode.text.toLowerCase()
-  const isApiRoute = method === "api_route"
-  if (!ROUTE_METHODS.has(method) && !isApiRoute) {
-    return null
-  }
-
-  // Skip comment nodes to find the actual first argument
-  const pathArgNode = argumentsNode.namedChildren.find(
-    (child) => child.type !== "comment",
-  )
-  const path = pathArgNode ? extractPathFromNode(pathArgNode) : ""
-
-  // For api_route, extract methods from keyword argument
-  let resolvedMethod = methodNode.text
-  if (isApiRoute) {
-    // Default to GET if no methods specified
-    resolvedMethod = "GET"
-    for (const argNode of argumentsNode.namedChildren) {
-      if (argNode.type === "keyword_argument") {
-        const nameNode = argNode.childForFieldName("name")
-        const valueNode = argNode.childForFieldName("value")
-        if (nameNode?.text === "methods" && valueNode) {
-          // Extract first method from list
-          const listItems = valueNode.namedChildren
-          const firstMethod =
-            listItems.length > 0 ? extractStringValue(listItems[0]) : null
-          if (firstMethod) {
-            resolvedMethod = firstMethod
-          }
-        }
-      }
-    }
-  }
-
-  // Grammar guarantees: decorated_definition always has a definition field with a name
-  const functionDefNode = node.childForFieldName("definition")!
-  const functionName = functionDefNode.childForFieldName("name")?.text ?? ""
-  const functionBody = functionDefNode.childForFieldName("body")
-  const firstStatement = functionBody?.namedChildren[0]
-  let docstring: string | undefined
-  if (firstStatement?.type === "expression_statement") {
-    const expr = firstStatement.firstNamedChild
-    if (expr?.type === "string") {
-      docstring = stripDocstring(expr.text)
-    }
-  }
-  return {
-    owner: objectNode.text,
-    method: resolvedMethod,
-    path,
-    function: functionName,
-    line: node.startPosition.row + 1,
-    column: node.startPosition.column,
-    docstring,
-  }
+  return path
 }
 
 /** Extracts tags from a list node like ["users", "admin"] */
-function extractTags(listNode: Node): string[] {
+export function extractTags(listNode: Node): string[] {
   return listNode.namedChildren
     .map((elem) => extractStringValue(elem))
     .filter((v): v is string => v !== null)
@@ -243,45 +180,45 @@ export function routerExtractor(node: Node): RouterInfo | null {
 
   const variableNameNode = node.childForFieldName("left")
   const valueNode = node.childForFieldName("right")
-  if (!variableNameNode || valueNode?.type !== "call") {
+  if (!variableNameNode) {
+    return null
+  }
+
+  // Detect urlpatterns = [...] assignments
+  if (variableNameNode.text === "urlpatterns" && valueNode?.type === "list") {
+    return {
+      variableName: "urlpatterns",
+      type: "URLConf" as RouterType,
+      prefix: "",
+      tags: [],
+      line: node.startPosition.row + 1,
+      column: node.startPosition.column,
+    }
+  }
+
+  // Detect DRF Router assignments: router = DefaultRouter() or router = SimpleRouter()
+  if (valueNode?.type !== "call") {
     return null
   }
 
   const funcName = valueNode.childForFieldName("function")?.text
-  let type: RouterType
-  if (funcName === "APIRouter" || funcName === "fastapi.APIRouter") {
-    type = "APIRouter"
-  } else if (funcName === "FastAPI" || funcName === "fastapi.FastAPI") {
-    type = "FastAPI"
-  } else {
-    return null
-  }
-
-  let prefix = ""
-  let tags: string[] = []
-  const argumentsNode = valueNode.childForFieldName("arguments")
-  for (const child of argumentsNode?.namedChildren ?? []) {
-    if (child.type !== "keyword_argument") {
-      continue
-    }
-    const argName = child.childForFieldName("name")?.text
-    const argValue = child.childForFieldName("value")
-
-    if (argName === "prefix" && argValue) {
-      prefix = extractPathFromNode(argValue)
-    } else if (argName === "tags" && argValue?.type === "list") {
-      tags = extractTags(argValue)
+  if (
+    funcName === "DefaultRouter" ||
+    funcName === "SimpleRouter" ||
+    funcName === "rest_framework.routers.DefaultRouter" ||
+    funcName === "rest_framework.routers.SimpleRouter"
+  ) {
+    return {
+      variableName: variableNameNode.text,
+      type: "URLConf" as RouterType,
+      prefix: "",
+      tags: [],
+      line: node.startPosition.row + 1,
+      column: node.startPosition.column,
     }
   }
 
-  return {
-    variableName: variableNameNode.text,
-    type,
-    prefix,
-    tags,
-    line: node.startPosition.row + 1,
-    column: node.startPosition.column,
-  }
+  return null
 }
 
 /** Checks if a node is inside an ancestor of a given type */
@@ -398,33 +335,119 @@ function extractMethodCall(
   return { object: objectNode.text, args }
 }
 
-export function includeRouterExtractor(node: Node): IncludeRouterInfo | null {
-  const call = extractMethodCall(node, "include_router")
-  if (!call) {
+/** Extracts include() calls within path()/re_path() for Django URL includes */
+export function includeExtractor(node: Node): IncludeRouterInfo | null {
+  if (node.type !== "call") {
     return null
   }
 
-  let prefix = ""
-  let tags: string[] = []
-  for (const arg of call.args) {
-    if (arg.type !== "keyword_argument") {
-      continue
-    }
-    const name = arg.childForFieldName("name")?.text
-    const value = arg.childForFieldName("value")
+  const funcNode = node.childForFieldName("function")
+  const funcName = funcNode?.text
+  if (funcName !== "path" && funcName !== "re_path") {
+    return null
+  }
 
-    if (name === "prefix" && value) {
-      prefix = extractPathFromNode(value)
-    } else if (name === "tags" && value?.type === "list") {
-      tags = extractTags(value)
+  const argumentsNode = node.childForFieldName("arguments")
+  const args =
+    argumentsNode?.namedChildren.filter((c) => c.type !== "comment") ?? []
+  if (args.length < 2) {
+    return null
+  }
+
+  const routeArg = args[0]
+  const viewArg = args[1]
+
+  // Check if second argument is include()
+  if (viewArg.type !== "call") {
+    return null
+  }
+  const viewFuncName = viewArg.childForFieldName("function")?.text
+  if (viewFuncName !== "include") {
+    return null
+  }
+
+  let prefix = ensureLeadingSlash(extractPathFromNode(routeArg))
+  // Remove trailing slash for prefix consistency
+  if (prefix.endsWith("/") && prefix.length > 1) {
+    prefix = prefix.slice(0, -1)
+  }
+
+  // Extract what's being included
+  const includeArgs =
+    viewArg
+      .childForFieldName("arguments")
+      ?.namedChildren.filter((c) => c.type !== "comment") ?? []
+  let router = ""
+  if (includeArgs.length > 0) {
+    const firstArg = includeArgs[0]
+    if (firstArg.type === "string") {
+      router = extractStringValue(firstArg) ?? firstArg.text
+    } else if (firstArg.type === "tuple") {
+      // include(('myapp.urls', 'myapp'), namespace='v2')
+      const tupleItems = firstArg.namedChildren
+      if (tupleItems.length > 0 && tupleItems[0].type === "string") {
+        router = extractStringValue(tupleItems[0]) ?? tupleItems[0].text
+      }
+    } else {
+      // Could be router.urls or a variable
+      router = firstArg.text
     }
   }
 
   return {
-    owner: call.object,
-    router: call.args[0]?.text ?? "",
+    owner: "urlpatterns",
+    router,
     prefix,
-    tags,
+    tags: [],
+  }
+}
+
+/** Extracts route information from path() and re_path() calls in urlpatterns */
+export function urlPatternRouteExtractor(node: Node): RouteInfo | null {
+  if (node.type !== "call") {
+    return null
+  }
+
+  const funcNode = node.childForFieldName("function")
+  const funcName = funcNode?.text
+  if (funcName !== "path" && funcName !== "re_path") {
+    return null
+  }
+
+  const argumentsNode = node.childForFieldName("arguments")
+  const args =
+    argumentsNode?.namedChildren.filter((c) => c.type !== "comment") ?? []
+  if (args.length < 2) {
+    return null
+  }
+
+  const routeArg = args[0]
+  const viewArg = args[1]
+
+  // Skip if second argument is include() - that's handled by includeExtractor
+  if (viewArg.type === "call") {
+    const viewFuncName = viewArg.childForFieldName("function")?.text
+    if (viewFuncName === "include") {
+      return null
+    }
+  }
+
+  const routePath = ensureLeadingSlash(extractPathFromNode(routeArg))
+
+  // Extract the view function name
+  let functionName = viewArg.text
+  // Handle cases like views.user_list -> user_list
+  if (viewArg.type === "attribute") {
+    functionName = viewArg.childForFieldName("attribute")?.text ?? viewArg.text
+  }
+
+  return {
+    owner: "urlpatterns",
+    method: "GET", // Django URLs don't specify method; default to GET
+    path: routePath,
+    function: functionName,
+    line: node.startPosition.row + 1,
+    column: node.startPosition.column,
   }
 }
 

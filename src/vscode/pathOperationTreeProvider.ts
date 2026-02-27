@@ -200,7 +200,7 @@ export class PathOperationTreeProvider
   getChildren(element?: PathOperationTreeItem): PathOperationTreeItem[] {
     if (!element) {
       if (this.apps.length === 0) {
-        return [{ type: "message", text: "No FastAPI app found" }]
+        return [{ type: "message", text: "No Django app found" }]
       }
       return this.roots
     }
@@ -288,7 +288,7 @@ export class PathOperationTreeProvider
             docstringSection,
         )
         routeItem.command = {
-          command: "fastapi-vscode.goToPathOperation",
+          command: "django-vscode.goToPathOperation",
           title: "Go to Definition",
           arguments: [element],
         }

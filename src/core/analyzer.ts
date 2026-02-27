@@ -1,5 +1,5 @@
 /**
- * Analyzer module to extract FastAPI-related information from syntax trees.
+ * Analyzer module to extract Django-related information from syntax trees.
  */
 
 import type { Tree } from "web-tree-sitter"
@@ -9,9 +9,10 @@ import {
   decoratorExtractor,
   findNodesByType,
   importExtractor,
-  includeRouterExtractor,
+  includeExtractor,
   mountExtractor,
   routerExtractor,
+  urlPatternRouteExtractor,
 } from "./extractors.js"
 import type { FileSystem } from "./filesystem"
 import type { FileAnalysis } from "./internal"
@@ -26,7 +27,7 @@ function resolveVariables(
   variables: Map<string, string>,
 ): string {
   // Match sentinel-wrapped names produced by extractPathFromNode for identifiers.
-  // Using \uE000 (Unicode private use) as sentinel ensures FastAPI path parameters
+  // Using \uE000 (Unicode private use) as sentinel ensures Django path parameters
   // like {id} are never substituted — only actual identifier references are resolved.
   return path.replace(
     /\uE000([^\uE000]+)\uE000/g,
@@ -34,21 +35,23 @@ function resolveVariables(
   )
 }
 
-/** Analyze a syntax tree and extract FastAPI-related information */
+/** Analyze a syntax tree and extract Django-related information */
 export function analyzeTree(tree: Tree, filePath: string): FileAnalysis {
   const rootNode = tree.rootNode
 
   // Get all decorated definitions (functions and classes with decorators)
   const decoratedDefs = findNodesByType(rootNode, "decorated_definition")
-  const routes = decoratedDefs.map(decoratorExtractor).filter(notNull)
+  const decoratorRoutes = decoratedDefs.map(decoratorExtractor).filter(notNull)
 
-  // Get all router assignments
+  // Get all router assignments (urlpatterns, DRF routers)
   const assignments = findNodesByType(rootNode, "assignment")
   const routers = assignments.map(routerExtractor).filter(notNull)
 
-  // Get all include_router and mount calls
+  // Get all call nodes for path(), re_path(), include(), and mount()
   const callNodes = findNodesByType(rootNode, "call")
-  const includeRouters = callNodes.map(includeRouterExtractor).filter(notNull)
+  const urlRoutes = callNodes.map(urlPatternRouteExtractor).filter(notNull)
+  const routes = [...decoratorRoutes, ...urlRoutes]
+  const includeRouters = callNodes.map(includeExtractor).filter(notNull)
   const mounts = callNodes.map(mountExtractor).filter(notNull)
 
   // Get all import statements

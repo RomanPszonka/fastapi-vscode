@@ -1,3 +1,3 @@
 # Re-exports for convenient imports
-from .users import router as users_router
-from .items import router as items_router
+from .users import urlpatterns as users_urls
+from .items import urlpatterns as items_urls

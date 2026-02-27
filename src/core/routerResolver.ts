@@ -8,9 +8,9 @@ import type { Parser } from "./parser"
 export type { RouterNode }
 
 /**
- * Finds the main FastAPI app or APIRouter in the list of routers.
+ * Finds the main Django app or URLConf in the list of routers.
  * If targetVariable is specified, only returns the router with that variable name.
- * Otherwise, prioritizes FastAPI apps over APIRouters.
+ * Otherwise, prioritizes Django apps over URLConfs.
  */
 function findAppRouter(
   routers: RouterInfo[],
@@ -20,8 +20,8 @@ function findAppRouter(
     return routers.find((r) => r.variableName === targetVariable)
   }
   return (
-    routers.find((r) => r.type === "FastAPI") ??
-    routers.find((r) => r.type === "APIRouter")
+    routers.find((r) => r.type === "Django") ??
+    routers.find((r) => r.type === "URLConf")
   )
 }
 
@@ -85,13 +85,13 @@ async function buildRouterGraphInternal(
   let resolvedEntryUri = entryFileUri
 
   log(
-    `Analyzed "${resolvedEntryUri}": ${analysis.routes.length} routes, ${analysis.routers.length} routers, ${analysis.includeRouters.length} include_router calls`,
+    `Analyzed "${resolvedEntryUri}": ${analysis.routes.length} routes, ${analysis.routers.length} routers, ${analysis.includeRouters.length} include() calls`,
   )
 
-  // Find FastAPI instantiation (filter by targetVariable if specified)
+  // Find Django urlpatterns (filter by targetVariable if specified)
   let appRouter = findAppRouter(analysis.routers, targetVariable)
 
-  // If no FastAPI/APIRouter found and this is an __init__.py, check for re-exports
+  // If no Django URLconf found and this is an __init__.py, check for re-exports
   if (!appRouter && entryFileUri.endsWith("__init__.py")) {
     const actualRouterUri = await resolveRouterFromInit(
       entryFileUri,
@@ -118,7 +118,7 @@ async function buildRouterGraphInternal(
   }
 
   // Find all routers included in the app
-  // Only include routes that belong directly to the app (not to local APIRouters)
+  // Only include routes that belong directly to the app (not to local URL confs)
   const appRoutes = analysis.routes.filter(
     (r) => r.owner === appRouter.variableName,
   )
@@ -141,10 +141,10 @@ async function buildRouterGraphInternal(
     children: [],
   }
 
-  // Process include_router calls to find child routers
+  // Process include() calls to find child routers
   for (const include of analysis.includeRouters) {
     log(
-      `Resolving include_router: ${include.router} (prefix: ${include.prefix || "none"})`,
+      `Resolving include(): ${include.router} (prefix: ${include.prefix || "none"})`,
     )
     const childRouter = await resolveRouterReference(
       include.router,
@@ -156,7 +156,7 @@ async function buildRouterGraphInternal(
       visited,
     )
     if (childRouter) {
-      // Merge tags from include_router call with the router's own tags
+      // Merge tags from include() call with the router's own tags
       if (include.tags.length > 0) {
         childRouter.tags = [...new Set([...childRouter.tags, ...include.tags])]
       }
@@ -193,7 +193,7 @@ async function buildRouterGraphInternal(
 
 /**
  * Resolves a router/app reference to its RouterNode.
- * Used for include_router and mount calls.
+ * Used for include and mount calls.
  *
  * Handles both simple references (e.g., "router") and dotted references
  * (e.g., "api_routes.router" where api_routes is an imported module).
@@ -214,7 +214,7 @@ async function resolveRouterReference(
 
   // First, check if this is a local router defined in the same file
   const localRouter = analysis.routers.find(
-    (r) => r.variableName === moduleName && r.type === "APIRouter",
+    (r) => r.variableName === moduleName && r.type === "URLConf",
   )
   if (localRouter) {
     // Filter routes that belong to this router (decorated with @router.method)
@@ -238,13 +238,13 @@ async function resolveRouterReference(
       children: [],
     }
 
-    // Process include_router calls owned by this router (nested routers)
+    // Process include() calls owned by this router (nested routers)
     const routerIncludes = analysis.includeRouters.filter(
       (inc) => inc.owner === moduleName,
     )
     for (const include of routerIncludes) {
       log(
-        `Resolving nested include_router: ${include.router} (owner: ${moduleName}, prefix: ${include.prefix || "none"})`,
+        `Resolving nested include(): ${include.router} (owner: ${moduleName}, prefix: ${include.prefix || "none"})`,
       )
       const childRouter = await resolveRouterReference(
         include.router,
@@ -355,13 +355,13 @@ async function resolveRouterReference(
         children: [],
       }
 
-      // Process include_router calls owned by this router (nested routers)
+      // Process include() calls owned by this router (nested routers)
       const routerIncludes = importedAnalysis.includeRouters.filter(
         (inc) => inc.owner === attributeName,
       )
       for (const include of routerIncludes) {
         log(
-          `Resolving nested include_router: ${include.router} (owner: ${attributeName}, prefix: ${include.prefix || "none"})`,
+          `Resolving nested include(): ${include.router} (owner: ${attributeName}, prefix: ${include.prefix || "none"})`,
         )
         const childRouter = await resolveRouterReference(
           include.router,

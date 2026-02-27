@@ -1,9 +1,5 @@
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
-import sinon from "sinon"
-import * as vscode from "vscode"
-import type { ApiService } from "../cloud/api"
-import type { ConfigService } from "../cloud/config"
 import type { FileSystem } from "../core/filesystem"
 
 declare const __DIST_ROOT__: string
@@ -113,71 +109,4 @@ export const nodeFileSystem: FileSystem = {
     const path = uriToPath(uri)
     return `file://${dirname(path)}`
   },
-}
-
-// Cloud helpers
-
-export function stubFs() {
-  const original = vscode.workspace.fs
-  const fake = {
-    readFile: sinon.stub(),
-    writeFile: sinon.stub(),
-    delete: sinon.stub(),
-    createDirectory: sinon.stub(),
-  } as unknown as typeof vscode.workspace.fs & {
-    readFile: sinon.SinonStub
-    writeFile: sinon.SinonStub
-    delete: sinon.SinonStub
-    createDirectory: sinon.SinonStub
-  }
-  Object.defineProperty(vscode.workspace, "fs", {
-    value: fake,
-    configurable: true,
-  })
-  return {
-    fake,
-    restore: () =>
-      Object.defineProperty(vscode.workspace, "fs", {
-        value: original,
-        configurable: true,
-      }),
-  }
-}
-
-export function mockResponse(body: unknown, ok = true, status = 200): Response {
-  return {
-    ok,
-    status,
-    statusText: ok ? "OK" : "Error",
-    json: async () => body,
-    text: async () => JSON.stringify(body),
-    clone: () => mockResponse(body, ok, status),
-  } as unknown as Response
-}
-
-export function mockApiService(overrides?: Partial<ApiService>) {
-  return {
-    getUser: sinon.stub().resolves(null),
-    getTeams: sinon.stub().resolves([]),
-    getApps: sinon.stub().resolves([]),
-    createApp: sinon.stub(),
-    getApp: sinon.stub(),
-    getTeam: sinon.stub(),
-    createDeployment: sinon.stub(),
-    getUploadUrl: sinon.stub(),
-    completeUpload: sinon.stub(),
-    getDeployment: sinon.stub(),
-    ...overrides,
-  } as unknown as sinon.SinonStubbedInstance<ApiService>
-}
-
-export function mockConfigService() {
-  return {
-    getConfig: sinon.stub(),
-    writeConfig: sinon.stub(),
-    deleteConfig: sinon.stub(),
-    startWatching: sinon.stub(),
-    dispose: sinon.stub(),
-    onConfigStateChanged: sinon.stub(),
-  } as unknown as sinon.SinonStubbedInstance<ConfigService>
 }

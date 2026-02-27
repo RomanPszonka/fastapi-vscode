@@ -1,5 +1,5 @@
 /**
- * Public API for FastAPI path operation discovery.
+ * Public API for Django path operation discovery.
  * This module can be used independently of VSCode.
  */
 

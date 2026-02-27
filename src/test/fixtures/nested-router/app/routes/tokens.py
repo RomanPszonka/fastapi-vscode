@@ -1,13 +1,15 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/{app_id}/tokens", tags=["tokens"])
+from django.urls import path
 
 
-@router.get("/")
-def list_tokens(app_id: int):
+def list_tokens(request, app_id):
     return []
 
 
-@router.post("/")
-def create_token(app_id: int):
+def create_token(request, app_id):
     return {"id": 1}
+
+
+urlpatterns = [
+    path('', list_tokens),
+    path('create/', create_token),
+]
